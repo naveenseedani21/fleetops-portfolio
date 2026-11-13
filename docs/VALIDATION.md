@@ -17,3 +17,7 @@ Validated locally on November 12, 2026. This is an execution record, not a claim
 GitHub Actions reports startup_failure before creating jobs, including on manual dispatch. No CI success is claimed. Local Playwright Chromium cannot launch under this environment (SIGABRT/EPERM); the complete end-to-end suite remains unverified. Docker is unavailable locally, so Compose image/startup validation is outstanding. npm reports moderate tooling advisories; complete dependency/container scanning is outstanding.
 
 The overview uses real tenant-scoped API data. It caps fleet aggregation at 1,000 devices and excludes retired devices from freshness and compliance distributions. Full accessibility validation, larger-fleet reporting, and hosted-environment validation remain outstanding. See TASKS.md for remaining scope.
+
+## 2026-11-13 controlled audit batch
+
+Fresh baseline:16 backend tests,11 frontend tests, frontend lint/format/build,4 simulator tests pass. After compatible health and regression changes:24 backend tests pass (zero failures/errors/skips), with successful jar packaging and isolated live HTTP probe checks on18081. Terraform foundation formatting/validation and actionlint pass. See SPEC_AUDIT.md E1–E7 for commands, corrected intermediate failures, remote CI startup failure, temporary-process cleanup restriction and exact limitations. No new full Playwright, Docker or cloud deployment result is claimed.

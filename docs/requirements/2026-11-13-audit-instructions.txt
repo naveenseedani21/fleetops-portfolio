@@ -1,0 +1,461 @@
+# FLEETOPS — EXISTING PROJECT AUDIT AND CONTROLLED GAP REMEDIATION
+
+You are reviewing an EXISTING FleetOps project against the original specification provided below.
+
+This is not a request to restart the project, regenerate the application, or replace existing work simply because it differs from the original plan.
+
+Your job is to:
+1. Understand what has already been implemented.
+2. Compare the actual implementation with the original specification.
+3. Identify missing requirements, incomplete features, defects, and deviations.
+4. Complete compatible missing work and make safe, targeted corrections.
+5. Ask for explicit permission before making changes that would replace, remove, or materially alter existing implementation choices.
+6. Verify your changes and document the actual resulting state.
+
+The central rule is:
+
+FILL GAPS WITHOUT SILENTLY REPLACING EXISTING WORK.
+
+A checklist item is not automatic permission to rewrite a working implementation.
+
+---
+
+## 1. HOW TO INTERPRET THE ORIGINAL SPECIFICATION
+
+Use the original FleetOps specification as the requirements baseline, not as a fresh-start execution command.
+
+Instructions in the original specification such as:
+- “Initialize the project.”
+- “Create the repository structure.”
+- “Start implementing now.”
+- “Use this architecture.”
+- “Proceed through all phases.”
+
+must be interpreted in the context of the existing repository.
+
+Do not repeat completed setup, regenerate existing applications, or restart completed phases.
+
+For this review, the preservation and approval rules in this instruction block govern how you reconcile differences with the original specification. Continue to respect applicable repository instructions and security restrictions.
+
+Distinguish between:
+- Original requirements.
+- Explicitly approved later changes.
+- Implementation decisions made without explicit approval.
+- Optional enhancements.
+- Features intentionally deferred by the user.
+- Claims in documentation that are not supported by code or tests.
+
+Do not treat an implementation choice as user-approved merely because an earlier coding session documented it.
+
+Do not silently revise the original requirements to make the current implementation appear compliant.
+
+Do not force optional enhancements into the application as though they were mandatory.
+
+If the complete original specification is unavailable, identify that limitation. Do not reconstruct missing requirements from assumptions.
+
+---
+
+## 2. START WITH A READ-ONLY INSPECTION
+
+Before changing application code, inspect:
+
+- Repository-level and relevant nested AGENTS.md files.
+- The original specification or its repository copy.
+- README.md.
+- PLAN.md and TASKS.md, if present.
+- Existing progress and decision records.
+- Architecture and security documentation.
+- Backend, frontend, and simulator implementations.
+- Database models and persistence code.
+- Authentication and authorization.
+- Tests and test configuration.
+- Docker and local development setup.
+- GitHub Actions workflows.
+- Terraform and deployment configuration.
+- Dependency manifests and lockfiles.
+- Relevant Git status, diffs, and history.
+
+Inspect actual code rather than relying only on documentation or checked checklist items.
+
+Establish:
+- What exists.
+- What is connected end to end.
+- What is only a stub or placeholder.
+- What is implemented but not verified.
+- What is already working differently from the original plan.
+- Whether there are uncommitted user changes.
+- Which validation commands are available.
+
+Do not overwrite, revert, stash, or discard existing user changes.
+
+Do not assume that unfamiliar code is obsolete.
+
+Do not inspect or print secret values unnecessarily.
+
+Before running setup scripts, tests, or other commands, check whether they could contact production services, mutate shared data, or create paid resources. Use local, isolated validation wherever possible.
+
+---
+
+## 3. BUILD A REQUIREMENT-BY-REQUIREMENT AUDIT
+
+Create or update:
+
+docs/SPEC_AUDIT.md
+
+Preserve existing audit history rather than replacing it without review.
+
+Map every substantive requirement from the original specification to implementation evidence. Group repeated requirements, but retain references to the relevant original sections.
+
+For each requirement, record:
+
+- Requirement ID or source section.
+- Expected behavior.
+- Current implementation.
+- Relevant file paths, classes, functions, configuration, or tests.
+- Verification evidence.
+- Status.
+- Proposed action.
+- Whether permission is required.
+- Dependencies or blockers.
+
+Use these statuses:
+
+### SATISFIED AND VERIFIED
+The requirement is implemented, and relevant validation was executed successfully.
+
+### IMPLEMENTED BUT UNVERIFIED
+The implementation appears present, but execution or sufficient validation has not been completed.
+
+Do not treat “unverified” as “missing” and create a duplicate implementation.
+
+### PARTIALLY IMPLEMENTED
+Some required behavior works, but specific parts are incomplete.
+
+### MISSING
+The requirement has no meaningful implementation.
+
+### DEFECTIVE
+The implementation exists but demonstrably fails the required behavior.
+
+### DIFFERENT IMPLEMENTATION — DECISION NEEDED
+An existing approach differs from the specification, and reconciling the difference would require a material change or an explicit acceptance of the deviation.
+
+### APPROVED DEVIATION
+The user explicitly approved an alternative. Record the approval source when available.
+
+### DEFERRED OR OPTIONAL
+The requirement is optional or was explicitly deferred. Do not count it as an unexplained failure.
+
+### BLOCKED
+A dependency, unavailable environment, missing approval, or other concrete limitation prevents implementation or verification.
+
+A different implementation may satisfy the same functional objective. Explain that possibility, but do not declare a mandatory technology requirement satisfied when that technology is absent.
+
+For example, a working React interface is evidence of frontend functionality, not evidence that the Angular requirement was met.
+
+---
+
+## 4. AUDIT BOTH FEATURES AND ENGINEERING QUALITY
+
+Use the complete original specification, including its acceptance criteria.
+
+Pay particular attention to:
+
+### Application functionality
+- Device inventory and lifecycle.
+- Policy creation and versioning.
+- Compliance evaluation.
+- Simulator integration.
+- Dashboard accuracy.
+- Audit history.
+- End-to-end user workflows.
+
+### Data integrity and reliability
+- DynamoDB access patterns and pagination.
+- Tenant-scoped persistence.
+- Duplicate report handling.
+- Out-of-order reports.
+- Concurrency controls.
+- Failure recovery.
+- Consistency between device state and compliance results.
+
+### Security
+- Authentication.
+- Authorization.
+- Tenant isolation.
+- Machine identity permissions.
+- Input validation.
+- Secret handling.
+- Safe logging.
+- Deployment boundaries.
+
+### Delivery and maintainability
+- Meaningful automated tests.
+- Docker builds and local setup.
+- GitHub Actions.
+- Terraform validation.
+- Observability.
+- Accessible frontend behavior.
+- Accurate documentation.
+- Evidence supporting portfolio and resume claims.
+
+Do not consider a feature complete solely because:
+- A file exists.
+- A screen renders.
+- A button is present.
+- A test mocks all meaningful behavior.
+- A README claims it works.
+- TASKS.md marks it complete.
+
+Trace important workflows across the actual frontend, backend, persistence, and tests.
+
+---
+
+## 5. WHAT YOU MAY FIX WITHOUT ASKING
+
+After the initial audit, proceed autonomously with changes that are compatible with the current implementation and the original requirements.
+
+Examples include:
+- Adding missing tests for existing behavior.
+- Completing a stub using established interfaces and patterns.
+- Connecting an existing UI control to an existing backend endpoint.
+- Adding a missing loading, empty, or error state.
+- Correcting an inaccurate setup instruction.
+- Adding validation consistent with the existing documented contract.
+- Fixing a narrowly scoped defect without changing intended behavior.
+- Adding missing observability without exposing sensitive information.
+- Extending an existing CI workflow with compatible checks.
+- Implementing a missing feature through existing extension points.
+
+Editing an existing file is not automatically a replacement.
+
+A small correction or compatible extension may be made without permission when it does not alter established architecture, contracts, data compatibility, security assumptions, or user-facing behavior beyond the requested correction.
+
+For every autonomous change:
+1. Keep the scope narrow.
+2. Preserve unrelated behavior.
+3. Follow existing conventions.
+4. Add or update meaningful tests.
+5. Run relevant validation.
+6. Update the audit with evidence.
+
+A change is not automatically safe just because it adds files. Adding a competing authentication system, database, or service is a material architectural change.
+
+---
+
+## 6. WHEN YOU MUST ASK FOR PERMISSION
+
+Request explicit permission BEFORE implementing a change that would:
+
+- Replace an existing framework or major library.
+- Replace an authentication provider or authentication flow.
+- Replace the database, persistence strategy, or major data model.
+- Introduce a competing implementation alongside an existing one.
+- Remove a feature or materially change established behavior.
+- Rewrite a substantial working component.
+- Reorganize the repository in a way that disrupts current tooling.
+- Break or materially change an API contract.
+- Require an incompatible schema change or data migration.
+- Rename or remove configuration needed by existing deployments.
+- Replace an existing CI/CD or deployment approach.
+- Upgrade a major dependency version with compatibility implications.
+- Weaken or materially redesign security controls.
+- Delete stored data or reset a shared environment.
+- Override an explicitly approved deviation.
+- Create or delete cloud resources.
+- Deploy to a remote environment.
+- Introduce paid services or recurring charges.
+
+Examples:
+
+1. The specification requires Angular, but the application already uses React.
+   Do not rewrite the frontend. Report the deviation and ask.
+
+2. The specification requires DynamoDB, but the current application uses PostgreSQL.
+   Do not migrate the database or add a second database to satisfy a keyword. Ask.
+
+3. Authentication is already implemented with one provider.
+   Do not replace it with Keycloak merely because the original prompt mentioned Keycloak.
+
+4. A CI pipeline already works.
+   Add compatible missing checks where safe, but ask before replacing its deployment architecture.
+
+5. A feature exists with different behavior.
+   Explain the difference and its consequences before changing behavior users or tests may depend on.
+
+When uncertain whether a proposed fix is a material replacement, explain the uncertainty and request a decision.
+
+Do not begin the replacement, migration, or preparatory destructive work while waiting for approval.
+
+---
+
+## 7. HOW TO REQUEST PERMISSION
+
+Batch related decisions where practical.
+
+For each approval request, provide:
+
+Approval ID:
+A short identifier such as A1.
+
+Original requirement:
+What the specification requested.
+
+Existing implementation:
+What currently exists and whether it works.
+
+Conflict:
+Why satisfying the requirement would replace or materially change existing work.
+
+Options:
+- Preserve the current approach and explicitly accept the deviation.
+- Adapt the existing implementation where practical.
+- Replace or migrate it to match the original specification.
+
+Recommendation:
+Your preferred option and the engineering reasons.
+
+Impact:
+Affected components, compatibility risks, data implications, security implications, and likely regression areas.
+
+Rollback:
+How the prior working state could be restored.
+
+Requested decision:
+A specific question identifying exactly what needs approval.
+
+Do not treat silence as approval.
+
+Approval for one change does not authorize unrelated rewrites.
+
+Continue independent, safe work while approval-dependent items remain blocked. Do not stop the entire audit because one architectural decision needs the user's input.
+
+---
+
+## 8. REMEDIATE IN SMALL, VERIFIED STEPS
+
+After inspection, briefly report:
+- The most important confirmed gaps.
+- Safe fixes you will make.
+- Changes that require permission.
+- Verification limitations.
+
+Then perform the safe work.
+
+Use this cycle:
+1. Select a confirmed gap.
+2. Inspect the affected implementation and dependencies.
+3. Make the smallest coherent correction.
+4. Add or update tests.
+5. Execute relevant checks.
+6. Inspect the diff for unintended changes.
+7. Update the audit and progress record.
+
+Do not:
+- Rebuild completed features from scratch.
+- Introduce unnecessary parallel systems.
+- Add technologies merely to satisfy keywords.
+- Make broad cosmetic changes during a functional audit.
+- Disable tests or security checks to obtain a passing build.
+- Adjust tests to endorse incorrect behavior.
+- Regenerate lockfiles or upgrade dependencies without a concrete reason.
+- Commit, push, reset, clean, or otherwise alter Git history without authorization.
+
+If you discover a serious security problem, flag it promptly. Make a narrow compatible correction where authorized; otherwise request the necessary decision. Do not silently weaken security or deploy a known vulnerable state to complete a checklist.
+
+---
+
+## 9. VERIFY HONESTLY AND PRESERVE EVIDENCE
+
+Establish the available baseline before remediation.
+
+Record pre-existing failures separately from failures introduced by your changes.
+
+Run relevant checks supported by the repository, such as:
+- Backend unit and integration tests.
+- Frontend tests, linting, and builds.
+- Simulator tests.
+- End-to-end workflows.
+- Docker configuration and image builds.
+- Terraform formatting and validation.
+- Security and dependency checks.
+
+Use the project's actual commands.
+
+Do not run destructive tests against nonlocal data or perform cloud load testing without approval.
+
+For each verification, record:
+- Command or procedure.
+- What it verifies.
+- Result.
+- Important limitations.
+
+Distinguish:
+- Passing tests.
+- Failing tests.
+- Tests not run.
+- Tests blocked by the environment.
+- Static inspection.
+- Successful local execution.
+- Successful remote deployment.
+
+Do not equate a successful build with a successful end-to-end workflow.
+
+Do not claim cloud deployment merely because Terraform validates.
+
+Do not fabricate results, coverage, benchmarks, screenshots, or user approval.
+
+---
+
+## 10. FINAL AUDIT AND HANDOFF
+
+After remediation, compare the updated project against the original specification again.
+
+Update docs/SPEC_AUDIT.md and existing progress documentation to reflect the actual state.
+
+Do not rewrite historical decisions or mark approval-dependent changes complete.
+
+Your final response must contain:
+
+### Overall assessment
+Explain how closely the implementation follows the original plan, using evidence rather than an invented compliance percentage.
+
+### Completed safe fixes
+State what you changed and what each change resolved.
+
+### Verified functionality
+Identify the important workflows and checks that actually passed.
+
+### Remaining gaps
+List incomplete or defective requirements and their exact blockers.
+
+### Existing deviations
+Identify alternatives already implemented and distinguish approved deviations from decisions still pending.
+
+### Permission requests
+Present only concrete decisions requiring user approval, with their approval IDs.
+
+### Verification limitations
+State what could not be tested or deployed.
+
+### Next step
+Identify the next highest-value action based on the remaining work.
+
+If the audit is too large for one session, finish a coherent batch, preserve the current state, and record the exact next unchecked requirement or remediation task. Do not claim the full audit is complete when it is not.
+
+---
+
+## START NOW
+
+Inspect the existing repository and compare it with the specification below.
+
+Do not stop after producing a checklist: complete confirmed, compatible missing work where possible.
+
+Do not restart the project.
+
+Do not replace existing work simply to make it resemble the original prompt.
+
+Ask permission whenever closing a gap would require replacing, removing, or materially changing what is already implemented.
+
+# ORIGINAL FLEETOPS SPECIFICATION
+[Paste the original FleetOps specification here.]

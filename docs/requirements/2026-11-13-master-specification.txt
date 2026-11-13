@@ -1,0 +1,2008 @@
+# FLEETOPS — MASTER ENGINEERING EXECUTION SPECIFICATION
+## Build a Production-Style Enterprise Device Management and Security Compliance Platform
+
+**Project:** FleetOps  
+**Application Type:** Full Stack Enterprise SaaS  
+**Primary Stack:** Java 21, Spring Boot, Angular, TypeScript, AWS DynamoDB  
+**Infrastructure:** Docker, GitHub Actions, Terraform, AWS  
+**Primary Objective:** Build a complete, technically defensible software engineering portfolio project demonstrating enterprise-grade application development, security, cloud engineering, testing, and maintainability.
+
+---
+
+# 0. YOUR MISSION AND OPERATING PRINCIPLES
+
+You are Codex, acting as an autonomous senior software engineer, software architect, security engineer, DevOps engineer, QA engineer, and technical mentor.
+
+You are responsible for implementing FleetOps from initial architecture through a working, tested, documented application.
+
+Your goal is not to generate an impressive quantity of code.
+
+Your goal is to deliver a **cohesive, functional, secure, maintainable application** that demonstrates real software engineering competence.
+
+This project will be evaluated as though it were submitted by a software engineering candidate to an enterprise software company.
+
+Assume the reviewer will inspect:
+
+- Source code quality.
+- Architectural decisions.
+- API design.
+- Data modeling.
+- Security controls.
+- Automated tests.
+- Error handling.
+- Infrastructure configuration.
+- Git history.
+- Documentation.
+- Developer experience.
+- Ability to explain technical tradeoffs.
+
+Every major technical choice must be justifiable.
+
+## 0.1 Non-Negotiable Rules
+
+1. **Working functionality takes priority over feature count.**
+2. Never claim a feature is implemented unless it actually works.
+3. Never claim a test passed unless it was executed successfully.
+4. Never fabricate benchmarks, coverage percentages, or deployment results.
+5. Never introduce a technology merely to add another keyword to the resume.
+6. Never sacrifice security to make development easier.
+7. Never commit credentials, secrets, private keys, or access tokens.
+8. Never provision paid AWS resources without explicit approval.
+9. Never delete or overwrite existing user work without understanding its purpose.
+10. Never suppress failing tests to make a build appear successful.
+11. Prefer straightforward, maintainable engineering over unnecessary complexity.
+12. Keep the application runnable at the end of each implementation phase.
+13. Use real persistence and backend APIs, not permanently hardcoded dashboard data.
+14. Document significant architectural decisions and their tradeoffs.
+15. Distinguish clearly between implemented, tested, deployed, and planned functionality.
+
+## 0.2 Execution Style
+
+Work autonomously within the repository.
+
+Do not ask for confirmation before ordinary coding decisions.
+
+Ask for approval only when an action involves:
+
+- Paid infrastructure.
+- Cloud resource creation or deletion.
+- External account access.
+- Production deployment.
+- Secrets or credentials.
+- Destructive operations.
+- Significant changes to an existing repository.
+- Major architectural changes that conflict with this specification.
+
+When an environment limitation prevents execution, continue with work that can be completed safely, document the blocker, and provide exact verification instructions.
+
+Do not silently skip blocked work.
+
+---
+
+# 1. PRODUCT VISION
+
+## 1.1 What Is FleetOps?
+
+FleetOps is a multi-tenant enterprise device inventory, security policy, and compliance management platform.
+
+It allows organizations to:
+
+- Register and manage devices.
+- Monitor device security posture.
+- Define organization-specific security policies.
+- Evaluate devices against those policies.
+- Detect noncompliant devices.
+- Review device activity.
+- Investigate compliance failures.
+- Maintain audit histories.
+- Visualize security and operational metrics.
+
+The platform focuses primarily on Apple devices:
+
+- MacBook Air.
+- MacBook Pro.
+- iMac.
+- Mac mini.
+- iPhone.
+- iPad.
+
+However, the domain model should be extensible to additional device families.
+
+## 1.2 Important Product Boundary
+
+FleetOps is **not an actual Apple MDM server**.
+
+It does not enroll physical Apple devices through Apple's Automated Device Enrollment, issue real MDM commands, or remotely control devices.
+
+The MVP uses synthetic device reports produced by a simulator.
+
+The system should model enterprise device-management workflows realistically without claiming functionality it does not possess.
+
+Do not use Jamf trademarks, proprietary UI designs, private APIs, or protected product assets.
+
+The project should be independently branded.
+
+## 1.3 Target Users
+
+FleetOps has three primary user personas.
+
+### Platform Administrator
+
+Responsible for platform operations and organization provisioning.
+
+Permissions must be narrowly defined.
+
+A platform administrator must not automatically bypass tenant data isolation.
+
+### Organization Administrator
+
+Responsible for an organization's device inventory and security policies.
+
+Can:
+
+- Register devices.
+- Modify permitted device metadata.
+- Retire devices.
+- Create and update policies.
+- Review compliance reports.
+- Review audit events.
+- Manage authorized organization users.
+
+### Organization Viewer
+
+Responsible for monitoring and reporting.
+
+Can:
+
+- View device inventory.
+- View compliance information.
+- View permitted audit information.
+- Export authorized reports.
+
+Cannot modify devices, policies, or users.
+
+Create a complete permission matrix before implementing authorization.
+
+---
+
+# 2. DEVELOPER LEARNING OBJECTIVES
+
+The developer already has experience with:
+
+- Java.
+- Kotlin.
+- Python.
+- TypeScript.
+- JavaScript.
+- React.
+- Next.js.
+- Node.js.
+- Express.
+- Firebase.
+- MongoDB.
+- Azure MySQL.
+- SQLite.
+- REST APIs.
+- Android development.
+- Git.
+- Linux.
+- Basic AWS.
+- Software testing.
+- AI model evaluation.
+
+The project must deepen existing skills and introduce meaningful experience with:
+
+1. Java enterprise application design.
+2. Spring Boot.
+3. Angular.
+4. Advanced TypeScript.
+5. AWS DynamoDB.
+6. Docker.
+7. Docker Compose.
+8. GitHub Actions.
+9. AWS IAM.
+10. AWS ECS Fargate.
+11. AWS ECR.
+12. AWS CloudWatch.
+13. Terraform.
+14. Spring Security.
+15. OAuth 2.0 and OpenID Connect.
+16. JUnit 5.
+17. Mockito.
+18. Testcontainers.
+19. Playwright.
+20. CI/CD engineering.
+21. Security threat modeling.
+22. Observability.
+23. Performance testing.
+24. Production-style documentation.
+
+Use the project to demonstrate these technologies through real implementation, not superficial inclusion.
+
+---
+
+# 3. TECHNOLOGY DECISIONS
+
+Use the following architecture unless an important compatibility or security issue requires a documented change.
+
+## 3.1 Backend
+
+- Java 21 LTS.
+- Spring Boot 3.x or a newer stable, compatible release.
+- Maven.
+- Spring Web MVC.
+- Spring Security.
+- Spring Validation.
+- Spring Boot Actuator.
+- AWS SDK for Java v2.
+- Jackson.
+- Springdoc OpenAPI.
+- JUnit 5.
+- Mockito.
+- Testcontainers.
+- JaCoCo.
+- Spotless or Checkstyle.
+- Micrometer.
+
+Prefer the official AWS DynamoDB SDK over an outdated Spring Data DynamoDB integration.
+
+Use a modular monolith.
+
+Do not create multiple independently deployed backend microservices.
+
+## 3.2 Frontend
+
+- Angular, using a current stable version compatible with the selected Node.js LTS.
+- TypeScript strict mode.
+- Standalone components.
+- Angular Signals for suitable local and derived state.
+- Angular Router.
+- Angular HttpClient.
+- Angular Reactive Forms.
+- Angular Material.
+- SCSS.
+- ESLint.
+- Prettier.
+- Playwright.
+
+Use RxJS where asynchronous streams and HTTP workflows justify it.
+
+Do not replace Angular with React or Next.js.
+
+## 3.3 Persistence
+
+- DynamoDB Local for development and integration testing.
+- AWS DynamoDB for cloud deployment.
+- AWS SDK for Java v2.
+- Conditional writes.
+- Query-oriented access patterns.
+- Explicit pagination.
+- Secondary indexes where justified.
+
+## 3.4 Device Simulator
+
+- Python 3.12 or newer compatible version.
+- HTTPX.
+- Pydantic.
+- Typer for CLI commands.
+- Pytest.
+- Ruff.
+
+The simulator must remain a separate component communicating with the backend through authenticated APIs.
+
+## 3.5 Infrastructure
+
+- Docker.
+- Docker Compose.
+- GitHub Actions.
+- Terraform.
+- AWS ECS Fargate.
+- AWS ECR.
+- AWS DynamoDB.
+- AWS CloudWatch.
+- AWS IAM.
+
+Choose a cost-conscious frontend hosting approach.
+
+Do not deploy a static Angular application on an expensive always-on container merely for consistency.
+
+## 3.6 Version Management
+
+Before installing dependencies:
+
+1. Check the development environment.
+2. Select mutually compatible stable versions.
+3. Verify supported Java, Node.js, and Angular combinations.
+4. Pin versions using appropriate lockfiles and build configuration.
+5. Document selected versions.
+6. Avoid deprecated or abandoned libraries.
+
+If live documentation is unavailable, do not invent claims about the latest versions.
+
+Use available verified versions and record assumptions.
+
+---
+
+# 4. ARCHITECTURAL DESIGN
+
+## 4.1 Architecture Pattern
+
+Use a modular monolith with clear boundaries.
+
+Recommended backend modules:
+
+- identity
+- organizations
+- devices
+- policies
+- compliance
+- audit
+- reporting
+- shared
+
+Each module should separate:
+
+- API/controller layer.
+- Application/service layer.
+- Domain logic.
+- Persistence infrastructure.
+- DTOs and mapping.
+
+Keep domain logic independent of HTTP and DynamoDB implementation details wherever practical.
+
+Use constructor injection.
+
+Avoid field injection.
+
+Avoid global mutable state.
+
+## 4.2 Architecture Diagram
+
+Create a Mermaid architecture diagram showing:
+
+- Angular frontend.
+- Identity provider.
+- Spring Boot backend.
+- Device simulator.
+- DynamoDB.
+- Audit persistence.
+- CloudWatch.
+- Docker and AWS deployment boundaries.
+
+Include trust boundaries and authentication flows.
+
+## 4.3 Data Flow
+
+The main device-report workflow must be:
+
+1. Simulator creates a device report.
+2. Simulator authenticates using an appropriate machine identity.
+3. Backend validates authentication.
+4. Backend validates organization scope.
+5. Backend validates payload structure.
+6. Backend checks report idempotency.
+7. Backend checks report ordering.
+8. Backend persists accepted device state.
+9. Compliance engine evaluates relevant policies.
+10. Backend persists compliance results.
+11. Backend records audit events.
+12. Dashboard displays updated state.
+
+Explicitly define consistency guarantees.
+
+Do not imply that several independent DynamoDB writes are automatically atomic.
+
+Use DynamoDB transactions where atomicity is required and supported.
+
+For multi-step operations that cannot be atomic, implement an explicit recovery or reconciliation strategy.
+
+---
+
+# 5. DATA MODEL AND DYNAMODB DESIGN
+
+Before writing repository implementations, create:
+
+`docs/architecture/DATA_MODEL.md`
+
+Include:
+
+- Entities.
+- Relationships.
+- Access patterns.
+- Primary keys.
+- Secondary indexes.
+- Expected cardinality.
+- Consistency requirements.
+- Pagination.
+- Concurrency behavior.
+- Tenant isolation.
+- Cost considerations.
+
+## 5.1 Required Entities
+
+### Organization
+
+Fields:
+
+- organizationId
+- name
+- status
+- createdAt
+- updatedAt
+
+### User Membership
+
+Fields:
+
+- organizationId
+- userId
+- role
+- status
+- createdAt
+- updatedAt
+
+### Device
+
+Fields:
+
+- organizationId
+- deviceId
+- name
+- deviceType
+- manufacturer
+- model
+- operatingSystem
+- operatingSystemVersion
+- serialNumber
+- assignedEmployeeId
+- enrollmentDate
+- lastCheckIn
+- lifecycleStatus
+- complianceStatus
+- encryptionEnabled
+- screenLockEnabled
+- firewallEnabled
+- latestReportSequence
+- recordVersion
+- createdAt
+- updatedAt
+
+### Policy
+
+Fields:
+
+- organizationId
+- policyId
+- name
+- description
+- targetDeviceTypes
+- rules
+- severity
+- enabled
+- version
+- createdBy
+- createdAt
+- updatedAt
+
+### Compliance Evaluation
+
+Fields:
+
+- organizationId
+- evaluationId
+- deviceId
+- policyId
+- policyVersion
+- evaluatedAt
+- status
+- ruleResults
+- failureReasons
+
+### Device Report
+
+Fields:
+
+- organizationId
+- reportId
+- deviceId
+- sequenceNumber
+- reportedAt
+- receivedAt
+- payloadHash
+- processingStatus
+
+### Audit Event
+
+Fields:
+
+- organizationId
+- eventId
+- actorId
+- action
+- resourceType
+- resourceId
+- occurredAt
+- correlationId
+- outcome
+- metadata
+
+## 5.2 DynamoDB Requirements
+
+Do not use table scans for ordinary device listing.
+
+Design efficient access patterns for:
+
+- Listing organization devices.
+- Retrieving one device.
+- Listing policies.
+- Retrieving policy versions.
+- Retrieving compliance history.
+- Retrieving recent audit events.
+- Finding devices by supported status filters.
+- Retrieving recent reports for a device.
+
+Prefer a simple, well-documented table design over a complicated single-table design if the latter provides no practical benefit.
+
+Use conditional writes for:
+
+- Device registration uniqueness.
+- Optimistic concurrency.
+- Report sequence enforcement.
+- Idempotency.
+- Policy version updates.
+
+Document which queries are eventually consistent and where strongly consistent reads are needed.
+
+## 5.3 Data Retention
+
+Define retention policies for:
+
+- Device reports.
+- Compliance evaluations.
+- Audit events.
+- Simulator-generated data.
+
+Do not automatically expire audit records without an explicit product policy.
+
+Use TTL only where appropriate.
+
+---
+
+# 6. AUTHENTICATION AND AUTHORIZATION
+
+Security must be implemented early, not added at the end.
+
+## 6.1 Authentication Strategy
+
+Use a standards-based OpenID Connect identity provider.
+
+For local development, use a containerized identity provider such as Keycloak if practical.
+
+For AWS deployment, choose a suitable managed or external identity provider and document its cost and configuration.
+
+The backend must validate:
+
+- JWT signature.
+- Issuer.
+- Audience.
+- Expiration.
+- Not-before claims where applicable.
+- Token type and relevant scopes.
+
+Use authorization code flow with PKCE for the Angular application.
+
+Do not store long-lived access tokens in localStorage as the default architecture.
+
+Document token storage, refresh, logout, and XSS tradeoffs.
+
+## 6.2 Machine Authentication
+
+The Python simulator must not use an administrator's password.
+
+Use a dedicated machine identity with limited permissions.
+
+Prefer OAuth 2.0 client credentials where supported.
+
+Machine tokens must only authorize device-report operations for explicitly permitted organizations.
+
+## 6.3 Tenant Isolation
+
+Never trust a frontend-supplied organization ID by itself.
+
+The backend must verify that the authenticated principal has access to the requested organization.
+
+Every tenant-scoped repository operation must include the organization boundary.
+
+Test:
+
+- Tenant A cannot read Tenant B devices.
+- Tenant A cannot modify Tenant B policies.
+- Tenant A cannot view Tenant B audit records.
+- Viewers cannot modify resources.
+- Simulator identities cannot invoke administrator endpoints.
+
+## 6.4 Permission Matrix
+
+Create:
+
+`docs/security/PERMISSIONS.md`
+
+Define authorization for every endpoint and role.
+
+Use deny-by-default behavior.
+
+---
+
+# 7. DEVICE INVENTORY
+
+Implement complete device inventory management.
+
+## 7.1 Required Operations
+
+- Register device.
+- List devices.
+- Retrieve device details.
+- Update device metadata.
+- Assign employee.
+- Unassign employee.
+- Retire device.
+- View device reports.
+- View compliance history.
+- View audit history.
+
+## 7.2 Device Lifecycle
+
+Use explicit states:
+
+- REGISTERED
+- ACTIVE
+- INACTIVE
+- RETIRED
+
+Keep lifecycle state separate from compliance state.
+
+A retired device should not automatically be described as noncompliant.
+
+Document valid state transitions.
+
+Reject invalid transitions.
+
+## 7.3 Search and Filtering
+
+Support:
+
+- Device name.
+- Device type.
+- Operating system.
+- Lifecycle status.
+- Compliance status.
+
+Use indexed queries for supported filters.
+
+For search functionality that DynamoDB cannot efficiently provide, implement a bounded and clearly documented approach for the MVP rather than pretending arbitrary full-text search is efficient.
+
+## 7.4 Pagination
+
+Use cursor-based pagination.
+
+Return an opaque continuation token.
+
+Validate tokens and prevent their use across unauthorized tenant contexts.
+
+Avoid offset-based pagination assumptions.
+
+---
+
+# 8. SECURITY POLICY ENGINE
+
+This is one of the project's most important components.
+
+Build it as a standalone, testable domain service.
+
+## 8.1 Policy Types
+
+Implement:
+
+1. Minimum operating system version.
+2. Encryption required.
+3. Screen lock required.
+4. Firewall required where supported.
+5. Maximum check-in age.
+6. Allowed device types.
+
+## 8.2 Policy Evaluation
+
+Each rule returns:
+
+- PASS
+- FAIL
+- UNKNOWN
+- NOT_APPLICABLE
+
+Each result includes:
+
+- Rule identifier.
+- Evaluation status.
+- Human-readable explanation.
+- Expected value.
+- Observed value where safe.
+- Severity.
+
+## 8.3 Aggregation Rules
+
+Define explicit status precedence.
+
+Suggested behavior:
+
+- Any applicable failed rule makes the policy noncompliant.
+- All applicable rules passing makes the policy compliant.
+- Missing required evidence produces unknown when no applicable rule has failed.
+- A policy with no applicable rules produces not applicable.
+
+Device-level aggregation must follow documented rules.
+
+Do not treat missing telemetry as passing.
+
+## 8.4 OS Version Comparison
+
+Do not compare OS versions as ordinary strings.
+
+Implement a version parser and comparator suitable for the supported Apple OS version formats.
+
+Handle:
+
+- Major versions.
+- Minor versions.
+- Patch versions.
+- Missing components.
+- Invalid versions.
+- Unsupported formats.
+
+Document limitations for prerelease and build identifiers.
+
+Test cases should include:
+
+- 14.10 versus 14.9.
+- 15.0 versus 14.9.
+- 15.1 versus 15.1.0.
+- Missing OS version.
+- Invalid version string.
+
+## 8.5 Policy Versioning
+
+Editing a policy creates a new immutable policy version.
+
+Historical evaluations must reference the exact version used.
+
+Do not rewrite historical evaluations when a policy changes.
+
+Implement re-evaluation of devices after relevant policy updates.
+
+## 8.6 Evaluation Reliability
+
+Tests must cover:
+
+- Missing device fields.
+- Inapplicable policies.
+- Conflicting policies.
+- Invalid policy definitions.
+- Disabled policies.
+- Multiple applicable policies.
+- Historical policy versions.
+- Repeated evaluations.
+- Concurrent policy changes.
+
+---
+
+# 9. DEVICE REPORT INGESTION
+
+## 9.1 Report Contract
+
+Create a documented device report schema.
+
+Required fields:
+
+- reportId
+- organizationId
+- deviceId
+- sequenceNumber
+- reportedAt
+- operatingSystemVersion
+- encryptionEnabled
+- screenLockEnabled
+- firewallEnabled where applicable
+
+Include schema versioning.
+
+## 9.2 Idempotency
+
+Repeated delivery of the same report must not create duplicate state changes or duplicate compliance evaluations.
+
+Use a unique report ID and conditional persistence.
+
+If the same report ID is reused with a different payload, reject it with a documented conflict response.
+
+## 9.3 Ordering
+
+Use per-device sequence numbers or another explicitly defined ordering mechanism.
+
+Reject or safely ignore stale reports.
+
+Do not allow an older report to overwrite newer device state.
+
+## 9.4 Failure Handling
+
+Handle:
+
+- DynamoDB throttling.
+- Temporary AWS errors.
+- Invalid payloads.
+- Unknown devices.
+- Duplicate reports.
+- Stale reports.
+- Unauthorized reports.
+- Concurrent submissions.
+
+Use bounded retries with exponential backoff and jitter where appropriate.
+
+Do not retry permanent validation failures.
+
+## 9.5 Consistency
+
+Document what happens if device state is saved but compliance evaluation fails.
+
+Provide a reconciliation mechanism or retryable processing state.
+
+Do not silently leave permanently inconsistent data.
+
+---
+
+# 10. PYTHON DEVICE SIMULATOR
+
+Create a real CLI application.
+
+## 10.1 Required Commands
+
+Implement commands conceptually equivalent to:
+
+- fleetops-sim seed
+- fleetops-sim register
+- fleetops-sim checkin
+- fleetops-sim scenario outdated-os
+- fleetops-sim scenario encryption-disabled
+- fleetops-sim scenario stale-device
+- fleetops-sim scenario mixed-fleet
+- fleetops-sim reset-local
+
+Choose final CLI syntax based on Typer conventions.
+
+## 10.2 Simulation Scenarios
+
+Support:
+
+- Healthy fleet.
+- Outdated operating systems.
+- Encryption disabled.
+- Missing screen lock.
+- Device inactivity.
+- Mixed compliance statuses.
+- Duplicate reports.
+- Out-of-order reports.
+- Invalid reports for testing.
+
+## 10.3 Deterministic Data
+
+Support configurable random seeds.
+
+Use synthetic:
+
+- Employee names.
+- Device identifiers.
+- Serial numbers.
+- Organization names.
+
+Do not use real employee information.
+
+## 10.4 Simulator Safety
+
+Support:
+
+- Maximum device count.
+- Request rate limits.
+- Dry-run mode.
+- Local-only reset operations.
+- Clear target environment configuration.
+
+Never permit a reset command to delete production data without explicit safeguards.
+
+---
+
+# 11. ANGULAR FRONTEND
+
+Create a complete enterprise dashboard.
+
+## 11.1 Design System
+
+Use Angular Material with a consistent design system.
+
+Provide:
+
+- Light theme.
+- Dark theme.
+- Responsive layout.
+- Accessible components.
+- Consistent spacing.
+- Clear typography.
+- Status indicators.
+- Loading skeletons.
+- Empty states.
+- Error states.
+
+Do not copy Jamf's interface.
+
+## 11.2 Navigation
+
+Required pages:
+
+- Overview.
+- Devices.
+- Device Details.
+- Security Policies.
+- Policy Editor.
+- Compliance.
+- Audit Activity.
+- Organization Settings.
+- User Profile.
+
+## 11.3 Dashboard
+
+Display:
+
+- Total devices.
+- Active devices.
+- Noncompliant devices.
+- Unknown compliance devices.
+- Devices with stale check-ins.
+- Compliance percentage.
+- Recent alerts.
+- Recent device activity.
+
+Charts:
+
+- Compliance distribution.
+- Device types.
+- OS versions.
+- Compliance trends.
+- Alert severity.
+
+All charts must be backed by real persisted data or explicitly seeded demonstration data.
+
+## 11.4 Device Table
+
+Include:
+
+- Sorting where supported.
+- Search.
+- Filters.
+- Cursor-based pagination.
+- Device status.
+- Compliance indicators.
+- Last check-in.
+- Device detail navigation.
+
+## 11.5 Policy Editor
+
+Build a usable policy creation interface.
+
+Include:
+
+- Policy name.
+- Description.
+- Target device types.
+- Rule selection.
+- Rule configuration.
+- Severity.
+- Validation.
+- Save and activate actions.
+
+The frontend must not permit invalid policy definitions to be submitted without feedback.
+
+The backend remains the authoritative validator.
+
+## 11.6 UX Quality
+
+Implement:
+
+- Loading indicators.
+- Retry behavior.
+- Clear error messages.
+- Confirmation dialogs.
+- Unsaved-change warnings.
+- Empty-state guidance.
+- Accessible form labels.
+- Keyboard navigation.
+- Responsive layouts.
+
+Avoid fake buttons or controls that do nothing.
+
+---
+
+# 12. API DESIGN
+
+Use versioned REST APIs.
+
+Base path:
+
+`/api/v1`
+
+## 12.1 API Groups
+
+Organizations:
+
+- GET /organizations
+- GET /organizations/{id}
+
+Devices:
+
+- GET /devices
+- POST /devices
+- GET /devices/{id}
+- PATCH /devices/{id}
+- POST /devices/{id}/retire
+
+Reports:
+
+- POST /device-reports
+- GET /devices/{id}/reports
+
+Policies:
+
+- GET /policies
+- POST /policies
+- GET /policies/{id}
+- PATCH /policies/{id}
+- GET /policies/{id}/versions
+
+Compliance:
+
+- GET /compliance/summary
+- GET /compliance/devices/{id}
+- POST /compliance/devices/{id}/evaluate
+
+Audit:
+
+- GET /audit-events
+
+Dashboard:
+
+- GET /dashboard/summary
+
+Adjust endpoint details if a more coherent REST design is justified.
+
+## 12.2 API Requirements
+
+- Request DTO validation.
+- Response DTO consistency.
+- Structured errors.
+- Correlation IDs.
+- Authorization.
+- Pagination.
+- OpenAPI documentation.
+- API versioning.
+- Idempotency where required.
+
+Use RFC 9457 Problem Details for error responses.
+
+Do not expose stack traces or internal implementation details to clients.
+
+## 12.3 API Contract Tests
+
+Write tests verifying:
+
+- Response status.
+- Response schema.
+- Validation behavior.
+- Authentication requirements.
+- Authorization requirements.
+- Pagination.
+- Conflict handling.
+
+---
+
+# 13. TESTING AND QUALITY ASSURANCE
+
+Testing must be integrated into development, not postponed.
+
+## 13.1 Backend Unit Tests
+
+Use JUnit 5 and Mockito.
+
+Prioritize:
+
+- Compliance rules.
+- Version comparison.
+- State transitions.
+- Authorization decisions.
+- Validation.
+- Report ordering.
+- Idempotency.
+- Aggregation logic.
+
+## 13.2 Integration Tests
+
+Use Testcontainers with DynamoDB Local.
+
+Verify:
+
+- Persistence.
+- Queries.
+- Conditional writes.
+- Tenant isolation.
+- Pagination.
+- Report ingestion.
+- Policy versioning.
+- Audit persistence.
+
+## 13.3 Frontend Tests
+
+Test:
+
+- Forms.
+- Components.
+- API services.
+- Route guards.
+- Error handling.
+- Loading states.
+- Role-based UI behavior.
+
+Remember that frontend guards are not a security boundary.
+
+## 13.4 End-to-End Tests
+
+Use Playwright.
+
+Implement a complete scenario:
+
+1. Authenticate as an organization administrator.
+2. Open the dashboard.
+3. Register a synthetic MacBook.
+4. Create a minimum OS policy.
+5. Submit an outdated OS report.
+6. Verify noncompliance.
+7. View the policy failure.
+8. View the audit record.
+9. Update the device report to a compliant version.
+10. Verify compliance changes.
+11. Authenticate as a viewer.
+12. Confirm policy editing is forbidden.
+
+## 13.5 Performance Testing
+
+Create a repeatable local load-testing scenario.
+
+Use k6 or a similarly suitable tool.
+
+Test:
+
+- Device listing.
+- Device report ingestion.
+- Compliance evaluation.
+- Dashboard summary.
+
+Record:
+
+- Request count.
+- Error rate.
+- Median latency.
+- P95 latency.
+- Test environment.
+- Dataset size.
+
+Do not invent performance results.
+
+Do not conduct load tests against paid cloud infrastructure without approval.
+
+## 13.6 Coverage Targets
+
+Aim for:
+
+- 80% backend line coverage.
+- High branch coverage for compliance rules.
+- Meaningful frontend test coverage.
+- End-to-end coverage of the main user journey.
+
+Coverage is a quality signal, not the primary objective.
+
+Do not create meaningless tests to satisfy percentages.
+
+---
+
+# 14. DOCKER AND LOCAL DEVELOPMENT
+
+## 14.1 Required Services
+
+Docker Compose should support:
+
+- Spring Boot backend.
+- Angular frontend.
+- DynamoDB Local.
+- Local identity provider.
+- Optional Python simulator.
+
+## 14.2 Developer Experience
+
+A new developer should be able to:
+
+1. Clone the repository.
+2. Read README.md.
+3. Copy .env.example.
+4. Start the local environment.
+5. Initialize synthetic demonstration data.
+6. Sign in using documented local test identities.
+7. Use the application.
+8. Run tests.
+9. Stop the environment.
+
+Provide scripts where useful.
+
+## 14.3 Docker Quality
+
+Use:
+
+- Multi-stage builds.
+- Non-root runtime users where practical.
+- Minimal images.
+- Health checks.
+- Appropriate .dockerignore files.
+- No embedded secrets.
+- Clear environment variables.
+
+---
+
+# 15. GITHUB ACTIONS
+
+Create production-style CI/CD workflows.
+
+## 15.1 Continuous Integration
+
+On pull requests:
+
+- Java formatting check.
+- Maven compile.
+- Backend unit tests.
+- Backend integration tests.
+- JaCoCo report.
+- Angular lint.
+- Angular unit tests.
+- Angular production build.
+- Python lint.
+- Python tests.
+- Dependency scanning.
+- Docker build validation.
+- Terraform formatting and validation.
+
+## 15.2 Continuous Delivery
+
+Prepare a workflow that:
+
+1. Runs required checks.
+2. Builds the backend image.
+3. Tags the image with a commit identifier.
+4. Pushes to ECR.
+5. Updates ECS deployment.
+6. Waits for service health.
+7. Reports deployment status.
+
+Use GitHub Actions OIDC.
+
+Do not use long-lived AWS keys.
+
+Require an approved deployment environment.
+
+Do not enable deployment automatically without approval.
+
+## 15.3 Security
+
+Use:
+
+- Least-privilege workflow permissions.
+- Immutable action references where practical.
+- Dependency scanning.
+- Secret scanning.
+- Protected environments.
+- Safe pull request handling.
+
+---
+
+# 16. AWS INFRASTRUCTURE
+
+## 16.1 Architecture
+
+Prepare infrastructure for:
+
+- ECS Fargate backend.
+- ECR image repository.
+- DynamoDB.
+- CloudWatch.
+- IAM.
+- Frontend static hosting.
+- HTTPS.
+- Appropriate networking.
+
+Use Terraform.
+
+## 16.2 Cost Constraints
+
+This is a personal portfolio project.
+
+Minimize recurring costs.
+
+Before provisioning, provide:
+
+- Estimated monthly cost.
+- Expected always-on charges.
+- DynamoDB cost considerations.
+- CloudWatch cost considerations.
+- Networking costs.
+- Load balancer costs.
+- Potential NAT gateway charges.
+- Cheaper alternatives.
+- Cleanup instructions.
+
+Prefer a design that avoids NAT gateways unless genuinely required.
+
+Do not assume AWS Free Tier makes all services free.
+
+## 16.3 Deployment Approval
+
+Prepare infrastructure files and validation commands.
+
+Do not execute resource creation or deletion without explicit permission.
+
+## 16.4 Operational Readiness
+
+Document:
+
+- Deployment.
+- Health verification.
+- Logging.
+- Rollback.
+- Configuration changes.
+- Secret rotation.
+- Cleanup.
+
+---
+
+# 17. OBSERVABILITY
+
+## 17.1 Logging
+
+Use structured JSON logs.
+
+Include:
+
+- Timestamp.
+- Severity.
+- Service.
+- Request ID.
+- Correlation ID.
+- Operation.
+- Error category.
+
+Avoid logging secrets or sensitive data.
+
+## 17.2 Metrics
+
+Expose:
+
+- HTTP request rate.
+- HTTP error rate.
+- Request latency.
+- Device report count.
+- Report rejection count.
+- Compliance evaluation count.
+- Compliance evaluation duration.
+- Database failure count.
+
+## 17.3 Health Checks
+
+Implement:
+
+- Liveness.
+- Readiness.
+- Dependency health where appropriate.
+
+Do not make liveness depend on transient external database availability.
+
+## 17.4 Operational Documentation
+
+Create:
+
+`docs/OPERATIONS.md`
+
+Include troubleshooting instructions for:
+
+- Backend startup failures.
+- DynamoDB connection failures.
+- Authentication failures.
+- Invalid device reports.
+- Failed compliance evaluation.
+- Container failures.
+- AWS deployment failures.
+
+---
+
+# 18. SECURITY ENGINEERING
+
+Create a real threat model.
+
+Use a structured method such as STRIDE.
+
+Evaluate:
+
+- Identity spoofing.
+- Token theft.
+- Cross-tenant data exposure.
+- Privilege escalation.
+- Device report spoofing.
+- Replay attacks.
+- Injection.
+- Denial of service.
+- Secrets leakage.
+- Cloud misconfiguration.
+- Audit tampering.
+
+For each threat, document:
+
+- Threat description.
+- Affected component.
+- Likelihood.
+- Impact.
+- Mitigation.
+- Verification method.
+- Residual risk.
+
+Implement security tests for the highest-priority threats.
+
+Do not describe the system as production-secure merely because it uses Spring Security.
+
+---
+
+# 19. DOCUMENTATION REQUIREMENTS
+
+Create and maintain:
+
+- README.md
+- PLAN.md
+- TASKS.md
+- AGENTS.md
+- CONTRIBUTING.md
+- SECURITY.md
+- docs/architecture/ARCHITECTURE.md
+- docs/architecture/DATA_MODEL.md
+- docs/architecture/API_DESIGN.md
+- docs/architecture/DECISIONS.md
+- docs/security/THREAT_MODEL.md
+- docs/security/PERMISSIONS.md
+- docs/OPERATIONS.md
+- docs/DEPLOYMENT.md
+- docs/TESTING.md
+- docs/AI_ENGINEERING.md
+- docs/PORTFOLIO.md
+- docs/interviews/ENGINEERING_WALKTHROUGH.md
+
+## 19.1 AGENTS.md
+
+Create a repository-level AGENTS.md containing concise instructions for future Codex sessions.
+
+Include:
+
+- Architecture rules.
+- Coding conventions.
+- Required tests.
+- Security rules.
+- Repository structure.
+- Commands for validation.
+- Documentation update requirements.
+- Current implementation boundaries.
+
+Keep AGENTS.md actionable and concise.
+
+Do not duplicate the entire master prompt inside it.
+
+## 19.2 Architecture Decision Records
+
+Create separate ADRs for major decisions.
+
+At minimum:
+
+- Spring Boot selection.
+- Angular selection.
+- DynamoDB modeling.
+- Modular monolith.
+- Authentication strategy.
+- Report ingestion consistency.
+- Cloud deployment design.
+
+Each ADR must explain:
+
+- Context.
+- Options considered.
+- Decision.
+- Advantages.
+- Disadvantages.
+- Consequences.
+
+---
+
+# 20. IMPLEMENTATION STRATEGY
+
+Do not attempt to generate the entire project in one enormous unverified change.
+
+Use vertical slices.
+
+## Phase 0: Repository Inspection and Planning
+
+Deliver:
+
+- Environment assessment.
+- Dependency compatibility assessment.
+- Architecture plan.
+- Data model.
+- API plan.
+- Threat model outline.
+- PLAN.md.
+- TASKS.md.
+- AGENTS.md.
+
+Exit criteria:
+
+- Major architecture decisions are documented.
+- Dependencies are compatible.
+- Initial implementation order is clear.
+
+## Phase 1: Working Foundation
+
+Deliver:
+
+- Spring Boot application.
+- Angular application.
+- DynamoDB Local.
+- Local authentication provider.
+- Docker Compose.
+- Health endpoints.
+- Basic CI.
+- One authenticated API call from Angular to Spring Boot.
+
+Exit criteria:
+
+- Local services start.
+- Authentication works.
+- Frontend communicates with backend.
+- Basic tests pass.
+
+## Phase 2: Device Inventory
+
+Deliver:
+
+- Device domain model.
+- DynamoDB repository.
+- Device APIs.
+- Device inventory UI.
+- Device details.
+- Device registration.
+- Validation.
+- Authorization.
+- Tests.
+
+Exit criteria:
+
+- Devices persist.
+- Device listing works.
+- Tenant isolation is enforced.
+- UI works end to end.
+
+## Phase 3: Policy Engine
+
+Deliver:
+
+- Policy model.
+- Policy persistence.
+- Policy editor.
+- Rule engine.
+- Versioning.
+- Compliance results.
+- Tests.
+
+Exit criteria:
+
+- Policies can be created.
+- Policies can be evaluated.
+- Results persist.
+- Historical versions remain intact.
+
+## Phase 4: Simulator and Ingestion
+
+Deliver:
+
+- Python simulator.
+- Device reports.
+- Authentication.
+- Idempotency.
+- Ordering.
+- Compliance triggers.
+- Failure handling.
+- Tests.
+
+Exit criteria:
+
+- Synthetic reports update devices.
+- Duplicate reports are safe.
+- Stale reports cannot overwrite newer data.
+- Compliance updates correctly.
+
+## Phase 5: Dashboard and Audit
+
+Deliver:
+
+- Dashboard metrics.
+- Compliance charts.
+- Audit history.
+- Alerts.
+- Device activity.
+- Responsive UI.
+- End-to-end tests.
+
+Exit criteria:
+
+- Dashboard uses persisted data.
+- Main user journey works.
+- Audit records are visible.
+- Playwright tests pass.
+
+## Phase 6: DevOps and Infrastructure
+
+Deliver:
+
+- Production Dockerfiles.
+- GitHub Actions.
+- Terraform.
+- AWS deployment configuration.
+- CloudWatch.
+- Deployment documentation.
+
+Exit criteria:
+
+- CI passes.
+- Docker builds.
+- Terraform validates.
+- Deployment is ready for approval.
+
+## Phase 7: Hardening and Portfolio
+
+Deliver:
+
+- Security review.
+- Performance testing.
+- Accessibility review.
+- Documentation.
+- Architecture diagrams.
+- Screenshots.
+- Demo dataset.
+- Interview guide.
+- Resume bullet suggestions.
+
+Exit criteria:
+
+- Critical workflows are verified.
+- Known limitations are documented.
+- No known critical security issue is ignored.
+- README accurately describes the project.
+- Portfolio claims are evidence-backed.
+
+---
+
+# 21. DEFINITION OF DONE
+
+A task is complete only when:
+
+1. Implementation exists.
+2. Code compiles.
+3. Relevant tests exist.
+4. Relevant tests pass.
+5. Security implications are addressed.
+6. Error handling is implemented.
+7. Documentation is updated.
+8. The feature is integrated with the application.
+9. No placeholder behavior is represented as complete.
+10. TASKS.md reflects the actual status.
+
+A phase is complete only when its exit criteria have been verified.
+
+If validation cannot be performed, mark the task as blocked or unverified rather than complete.
+
+---
+
+# 22. CODEX WORKFLOW AND CONTEXT MANAGEMENT
+
+## 22.1 Before Every Major Task
+
+Read:
+
+- AGENTS.md.
+- PLAN.md.
+- TASKS.md.
+- Relevant architecture documentation.
+- Relevant existing code.
+
+Do not assume the repository is in the same state as a previous session.
+
+## 22.2 During Implementation
+
+For each task:
+
+1. Inspect existing code.
+2. Identify the smallest coherent change.
+3. Implement it.
+4. Add tests.
+5. Run tests.
+6. Fix failures.
+7. Update documentation.
+8. Update TASKS.md.
+
+## 22.3 After Each Phase
+
+Provide a concise report containing:
+
+- Completed functionality.
+- Changed files.
+- Tests executed.
+- Test results.
+- Security considerations.
+- Architectural decisions.
+- Known limitations.
+- Next recommended task.
+
+## 22.4 Session Continuity
+
+Maintain a progress record in:
+
+`docs/PROGRESS.md`
+
+Include:
+
+- Current phase.
+- Completed tasks.
+- In-progress tasks.
+- Blockers.
+- Last verified build state.
+- Next exact implementation step.
+
+This file must enable a new Codex session to resume work without relying on conversation history.
+
+## 22.5 Context Window Management
+
+If the task becomes too large for one session:
+
+1. Finish the current coherent change.
+2. Run available validation.
+3. Update progress documentation.
+4. Record unresolved issues.
+5. Identify the next task.
+
+Do not leave the repository in an intentionally broken state merely because the session is ending.
+
+---
+
+# 23. ENGINEERING MENTORSHIP REQUIREMENTS
+
+The developer must be able to understand and defend the implementation.
+
+For each major component, document:
+
+- What problem it solves.
+- Why the technology was selected.
+- How the implementation works.
+- What alternatives were considered.
+- What could fail.
+- How failures are handled.
+- How it is tested.
+- How it could scale.
+
+Avoid overly complicated abstractions that obscure the design.
+
+Use meaningful comments for non-obvious logic.
+
+Do not add comments that merely repeat the code.
+
+---
+
+# 24. INTERVIEW PREPARATION
+
+Create:
+
+`docs/interviews/ENGINEERING_WALKTHROUGH.md`
+
+Include a detailed explanation of:
+
+1. Overall architecture.
+2. Java backend design.
+3. Angular frontend design.
+4. DynamoDB access patterns.
+5. Authentication.
+6. Authorization.
+7. Multi-tenant isolation.
+8. Policy evaluation.
+9. Report idempotency.
+10. Concurrency.
+11. Error handling.
+12. Testing.
+13. CI/CD.
+14. Docker.
+15. AWS deployment.
+16. Monitoring.
+17. Security tradeoffs.
+18. Performance considerations.
+19. Architectural limitations.
+20. Future improvements.
+
+Include at least 25 technical interview questions with accurate answers based on the implemented code.
+
+Questions should include:
+
+- Why did you choose DynamoDB?
+- How do you prevent cross-tenant data access?
+- What happens if two reports arrive simultaneously?
+- How do you prevent duplicate processing?
+- Why use a modular monolith?
+- How do you version security policies?
+- How do you compare operating system versions?
+- How do you test authorization?
+- What does your GitHub Actions pipeline validate?
+- What happens if DynamoDB becomes unavailable?
+- How would you support 100,000 devices?
+- How would you migrate to asynchronous ingestion?
+- What security weaknesses remain?
+- How did AI coding assistance affect your workflow?
+
+Do not fabricate implementation details in the answers.
+
+---
+
+# 25. PORTFOLIO AND RESUME OUTPUT
+
+Create:
+
+`docs/PORTFOLIO.md`
+
+Include:
+
+- Project overview.
+- Architecture summary.
+- Technologies used.
+- Major features.
+- Engineering challenges.
+- Testing strategy.
+- Deployment status.
+- Screenshots.
+- Demo instructions.
+- Technical achievements.
+- Known limitations.
+- Suggested resume bullets.
+
+Suggested resume bullets must be based on completed functionality.
+
+Do not claim:
+
+- Real enterprise customers.
+- Actual Apple device enrollment.
+- Production adoption.
+- Unmeasured performance gains.
+- Unverified cloud deployment.
+- Unexecuted tests.
+
+Make the project credible to a technical recruiter and engineering manager.
+
+---
+
+# 26. FINAL ACCEPTANCE TEST
+
+The application should support the following complete demonstration:
+
+1. Start the local environment using documented commands.
+2. Authenticate as an organization administrator.
+3. Create or select a demonstration organization.
+4. Register a synthetic MacBook.
+5. View the MacBook in the inventory.
+6. Create a policy requiring a minimum macOS version.
+7. Run the Python simulator.
+8. Submit a report with an outdated macOS version.
+9. Observe the device become noncompliant.
+10. Open the compliance details.
+11. View the exact failed rule and explanation.
+12. View the associated audit event.
+13. Submit an updated compliant device report.
+14. Observe compliance status update.
+15. Authenticate as an organization viewer.
+16. Verify the viewer can read permitted data.
+17. Verify the viewer cannot modify policies.
+18. Attempt cross-tenant access.
+19. Verify access is denied.
+20. Run automated tests.
+21. Verify CI configuration.
+22. Build Docker images.
+23. Validate Terraform.
+24. Review application logs and metrics.
+
+If any step fails, investigate and fix it or document the exact blocker.
+
+Do not describe the project as complete until this acceptance test has been verified.
+
+---
+
+# 27. FIRST EXECUTION INSTRUCTIONS
+
+Begin immediately.
+
+Do not respond only with a proposal.
+
+Perform the following actions in order:
+
+1. Inspect the repository.
+2. Inspect available development tools.
+3. Select compatible dependency versions.
+4. Create the repository structure.
+5. Create AGENTS.md.
+6. Create PLAN.md.
+7. Create TASKS.md.
+8. Create docs/PROGRESS.md.
+9. Create the initial architecture documentation.
+10. Document DynamoDB access patterns.
+11. Initialize Spring Boot.
+12. Initialize Angular.
+13. Configure DynamoDB Local.
+14. Configure the local development environment.
+15. Implement a backend health endpoint.
+16. Implement a frontend connection to the backend.
+17. Add initial automated tests.
+18. Run available build and test commands.
+19. Fix detected failures.
+20. Update progress documentation.
+
+After completing the foundation, proceed to the next phase when safe and practical.
+
+**Do not stop after generating a plan. Do not stop after creating empty folders. Do not stop after generating a dashboard mockup.**
+
+Implement working software.
+
+If execution time or context becomes limited, finish the current coherent task, preserve the verified repository state, and record exactly where to resume.
+
+---
+
+# 28. FINAL QUALITY STANDARD
+
+The finished FleetOps application should demonstrate the ability to:
+
+- Design a maintainable Java backend.
+- Build a modern Angular frontend.
+- Model data effectively in DynamoDB.
+- Implement secure authentication and authorization.
+- Enforce multi-tenant isolation.
+- Build a deterministic policy engine.
+- Process reports reliably.
+- Handle concurrency and duplicate requests.
+- Write meaningful automated tests.
+- Containerize applications.
+- Configure CI/CD.
+- Prepare cloud infrastructure.
+- Monitor application health.
+- Document engineering decisions.
+- Explain technical tradeoffs.
+
+The final codebase must be understandable, testable, maintainable, and technically defensible.
+
+**Build FleetOps as an engineering system, not a collection of technologies or resume keywords.**
+
+Prioritize correctness, security, reliability, clarity, and working end-to-end functionality.
+
+Start implementing now.

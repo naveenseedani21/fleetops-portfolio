@@ -54,3 +54,17 @@
 - [ ] Owner review of build and hosting approval before any paid deployment.
 
 The initial application slices are implemented; the full eight-phase master specification is not complete. Do not describe unchecked items as delivered.
+
+## Controlled specification audit — 2026-11-13
+- [x] Preserve source specifications and map substantive sections in docs/SPEC_AUDIT.md.
+- [x] Re-run local baseline before application changes.
+- [x] Separate process liveness from dependency-aware readiness; verify outage/recovery and live HTTP.
+- [x] Expand minimum-OS recovery, tenant/machine denials, retirement, transaction rollback and signed nbf regression coverage (24 backend tests pass).
+- [x] Add AGENTS, PROGRESS, TESTING and endpoint permissions; preserve existing API/ADR documents with indexes.
+- [x] Add structured threat register, retention notes and25 grounded interview Q&A.
+- [ ] Resolve A1 simulator stack, A2 machine provisioning and A3 lifecycle decisions before material changes.
+- [ ] Correct lifecycle/compliance mixing after A3 approval; existing NONCOMPLIANT lifecycle values remain.
+- [ ] Define durable report-ID/history/retention behavior; current protection covers only the latest ID.
+- [ ] Next independent task: malformed query/authentication Problem Details contract coverage (§12.3).
+- [ ] Complete minimum-OS recovery/audit Playwright scenario and run full acceptance on a Docker-capable environment.
+- [ ] Stop temporary audit verification process on18081 from the host; automated process-control permission was denied.
