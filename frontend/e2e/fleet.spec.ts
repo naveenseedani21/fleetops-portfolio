@@ -19,6 +19,9 @@ async function login(page: Page, username: string, password: string) {
   await page.locator('#password').fill(password);
   await page.locator('#kc-login').click();
   await expect(page.getByRole('heading', { name: 'Device inventory', exact: true })).toBeVisible();
+  // The production CSP must not leave the stylesheet deferred behind a blocked inline handler.
+  await expect(page.locator('.shell')).toHaveCSS('display', 'flex');
+  await expect(page.locator('aside')).toHaveCSS('position', 'fixed');
 }
 async function browserHeaders(page: Page) {
   // Actual PKCE session from the running frontend; never an authentication mock.
@@ -168,7 +171,11 @@ test('viewer cannot provision or change policies and cannot cross the tenant bou
   expect(await pages(request, organization + '/devices', headers)).toEqual(inventory);
   expect(await pages(request, organization + '/audit-events', headers)).toEqual(audit);
   expect(await pages(request, organization + '/policies', headers)).toEqual(policies);
+  const policiesLoaded = page.waitForResponse(r => r.request().method() === 'GET' && new URL(r.url()).pathname === '/api/v1/organizations/demo/policies');
   await page.getByRole('link', { name: 'Security policies' }).click();
+  expect((await policiesLoaded).status()).toBe(200);
+  await expect(page.getByRole('heading', { name: 'Security policies', exact: true })).toBeVisible();
+  await expect(page.getByText('Loading policies…', { exact: true })).toBeHidden();
   await expect(page.getByRole('button', { name: '+ Create policy' })).toHaveCount(0);
   await page.screenshot({ path: testInfo.outputPath('viewer-policies.png'), fullPage: true });
 });
