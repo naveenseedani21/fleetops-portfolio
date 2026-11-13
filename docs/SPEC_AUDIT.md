@@ -222,3 +222,6 @@ Frontend **20 tests passed**:17 existing plus3 regressions checking local select
 Prior full GitHub [run43394713264](https://github.com/naveenseedani21/fleetops/actions/runs/43394713264) passed all five jobs on1d2e558, including the production stylesheet correction. Operations adds a third real Playwright test for inspector/navigation/mobile layout, preserving both original end-to-end security/reporting tests. Its execution result must be verified separately. Native backend is unchanged; Docker frontend rebuilt with unchanged CSP and the direct-stylesheet build fix preserved. No data reset, migration, auth rewrite, paid setting or hosting action.
 
 Isolated Docker visual verification: rebuilt/recreated only the frontend, signed in as the real local viewer, and confirmed styled inventory/inspector, correct RETIRED/COMPLIANT fields, no registration control and aria-current navigation. Capture: screenshots/operations-docker-viewer.jpg. No backend mock or data mutation was used for this visual check.
+
+
+Public portfolio update — 2026-11-13: owner approved a sanitized public copy and separate labeled frontend proof of concept. See PUBLICATION.md and USER_STORIES.md for audit scope, build isolation, real screenshot provenance and validation. The original private repository/data are preserved. No cloud backend or AWS deployment.

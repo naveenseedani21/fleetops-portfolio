@@ -47,6 +47,7 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+      - run: npm run build -- --configuration production,preview
       - run: npm audit --audit-level=high
       - run: docker build -t fleetops-web:${{ github.sha }} .
   simulator:

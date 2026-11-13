@@ -1,5 +1,9 @@
 # FleetOps
 
+[Explore the frontend preview](https://fleetops-operations-preview.naveenseedani.chatgpt.site) · [User stories and screenshots](docs/USER_STORIES.md) · [Run locally](docs/DEMO.md) · [CI](https://github.com/naveenseedani21/fleetops-portfolio/actions)
+
+**Two distinct experiences:** the hosted Angular preview uses labeled synthetic, in-memory UI states. The full Docker application uses real Spring Boot, Keycloak and DynamoDB Local. No backend is hosted on Sites and no AWS infrastructure has been deployed.
+
 A device inventory and security compliance platform. Spring Boot and Angular simulate Apple fleet workflows using persistent DynamoDB records, OIDC identities, versioned policies, and transactional audit evidence. **This is not Apple MDM and cannot control real devices.**
 
 ## Current build
@@ -33,8 +37,8 @@ flowchart LR
 Prerequisites: Docker Engine/Desktop with Compose. Local credentials below are intentionally public demo credentials, valid only for the loopback-bound development realm.
 
 ```sh
-git clone https://github.com/naveenseedani21/fleetops.git
-cd fleetops
+git clone https://github.com/naveenseedani21/fleetops-portfolio.git
+cd fleetops-portfolio
 docker compose up --build
 ```
 
@@ -77,7 +81,7 @@ Create policies through the UI before checking in to observe compliance changes.
 
 ## Validation
 
-Backend:34 passing tests, including two-process restart idempotency and mixed-precision history pagination. Frontend:20 tests. Simulator:37 pytest cases plus the retained4 unittest cases. [GitHub run43393690562](https://github.com/naveenseedani21/fleetops/actions/runs/43393690562) passed all five jobs, including the real Docker browser workflow. Native and isolated Docker browser suites also passed from the host. See the [validation record](docs/VALIDATION.md) for dated results, the production stylesheet correction, screenshot provenance and remaining limitations; [current CI](https://github.com/naveenseedani21/fleetops/actions/workflows/ci.yml) shows subsequent commits.
+Backend:34 passing tests, including two-process restart idempotency and mixed-precision history pagination. Frontend:22 tests (including2 standalone-preview tests). Simulator:37 pytest cases plus the retained4 unittest cases. [GitHub run43393690562](https://github.com/naveenseedani21/fleetops/actions/runs/43393690562) passed all five jobs, including the real Docker browser workflow. Native and isolated Docker browser suites also passed from the host. See the [validation record](docs/VALIDATION.md) for dated results, the production stylesheet correction, screenshot provenance and remaining limitations; [current CI](https://github.com/naveenseedani21/fleetops/actions/workflows/ci.yml) shows subsequent commits.
 
 ```sh
 # Java 21, Python 3.11+ and Docker (unless TEST_DYNAMODB_ENDPOINT is supplied)
@@ -104,4 +108,4 @@ OpenAPI JSON is available at `/v3/api-docs` with an access token. See [API guide
 
 ## Hosting
 
-Hosting is planned only after the owner approves the build. The target is ECS Fargate for the API and S3/CloudFront for Angular, with DynamoDB and a production OIDC provider. The initial Terraform foundation is not a complete hosted application. No deployment workflow is enabled and no resources have been provisioned. See [deployment readiness](docs/DEPLOYMENT.md).
+The budget is $0. Sites hosts only the separately built frontend proof of concept under the existing Pro entitlement. The real application runs locally through Docker. Terraform remains an unapplied foundation; no cloud backend is deployed. See [preview isolation](docs/PUBLICATION.md) and [local demo](docs/DEMO.md).

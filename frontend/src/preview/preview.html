@@ -1,0 +1,337 @@
+<a href="#main" class="skip">Skip to content</a>
+<header class="operations-header">
+  <a href="#main" class="brand"><span class="brand-mark">F</span> FleetOps</a>
+  <div class="preview-header-links">
+    <span class="preview-label">Interactive preview · Synthetic data</span
+    ><a [href]="source" target="_blank" rel="noopener noreferrer">View source ↗</a>
+  </div>
+</header>
+<div class="shell">
+  <aside class="navigation-rail">
+    <nav aria-label="Preview navigation">
+      <button
+        [class.active]="view() === 'inventory'"
+        [attr.aria-pressed]="view() === 'inventory'"
+        (click)="view.set('inventory')"
+        title="Device inventory"
+      >
+        <app-icon name="device" /><span>Inventory</span>
+      </button>
+      <button
+        [class.active]="view() === 'policies'"
+        [attr.aria-pressed]="view() === 'policies'"
+        (click)="view.set('policies')"
+        title="Policy requirements"
+      >
+        <app-icon name="shield" /><span>Policies</span>
+      </button>
+      <button
+        [class.active]="view() === 'evidence'"
+        [attr.aria-pressed]="view() === 'evidence'"
+        (click)="view.set('evidence')"
+        title="Genuine workflow screenshots"
+      >
+        <app-icon name="history" /><span>Evidence</span>
+      </button>
+      <button
+        [class.active]="view() === 'engineering'"
+        [attr.aria-pressed]="view() === 'engineering'"
+        (click)="view.set('engineering')"
+        title="Engineering and local setup"
+      >
+        <app-icon name="overview" /><span>Engineering</span>
+      </button>
+    </nav>
+    <span class="rail-mark" aria-hidden="true">F</span>
+  </aside>
+  <div class="workspace">
+    <main id="main">
+      <div class="preview-context">
+        <span
+          ><strong>Explore the interface.</strong> This preview has no login or backend
+          connection.</span
+        ><button (click)="view.set('evidence')">See real workflow evidence →</button>
+      </div>
+      @if (view() === 'inventory') {
+        <p class="eyebrow">FLEET / INVENTORY</p>
+        <div class="page-heading">
+          <div>
+            <h1>Device inventory</h1>
+            <p class="muted">A clear view of lifecycle and security posture.</p>
+          </div>
+          <button class="outline-button" (click)="reset()">Reset preview</button>
+        </div>
+        <section class="story-controls" aria-labelledby="story-heading">
+          <div>
+            <p class="eyebrow">FOLLOW A DEVICE</p>
+            <h2 id="story-heading">From provisioning to compliance</h2>
+          </div>
+          <div class="stage-buttons">
+            @for (step of stages; track step.title; let i = $index) {
+              <button
+                [class.chosen]="stage() === i"
+                [attr.aria-pressed]="stage() === i"
+                (click)="chooseStage(i)"
+              >
+                <span>{{ i + 1 }}</span>{{ step.title }}
+              </button>
+            }
+          </div>
+          <p>{{ current().detail }}</p>
+        </section>
+        <div class="inventory-summary">
+          <span class="summary-context">Illustrative fleet</span>
+          <div><strong>4</strong><span>Devices</span></div>
+          <div>
+            <strong>{{ current().lifecycle === 'ACTIVE' ? 3 : 2 }}</strong><span>Active</span>
+          </div>
+          <div>
+            <strong>{{ current().compliance === 'NONCOMPLIANT' ? 1 : 0 }}</strong><span
+              >Noncompliant</span
+            >
+          </div>
+        </div>
+        <div class="inventory-layout">
+          <section class="panel inventory-list">
+            <div class="section-heading">
+              <h2>Registered devices <span class="count">Synthetic inventory</span></h2>
+              <label class="role-control"
+                >Preview role<select
+                  [value]="role()"
+                  (change)="role.set($any($event.target).value)"
+                >
+                  <option>Administrator</option>
+                  <option>Viewer</option>
+                </select></label
+              >
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Device</th>
+                    <th>Operating system</th>
+                    <th>Lifecycle</th>
+                    <th>Compliance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (device of devices; track device; let i = $index) {
+                    <tr [class.selected-row]="selected() === i">
+                      <td>
+                        <button
+                          class="device-select"
+                          [attr.aria-pressed]="selected() === i"
+                          (click)="selected.set(i)"
+                        >
+                          <app-icon name="device" /><span
+                            ><span class="device-name">{{ device }}</span
+                            ><small>{{
+                              i < 2 ? 'MacBook Pro' : i === 2 ? 'iPad Air' : 'iPhone'
+                            }}</small></span
+                          >
+                        </button>
+                      </td>
+                      <td>
+                        {{ i < 2 ? 'macOS' : i === 2 ? 'iPadOS' : 'iOS' }}
+                        {{ i === 0 ? current().os : '17.0' }}
+                      </td>
+                      <td>
+                        {{ i === 0 ? current().lifecycle : i === 3 ? 'REGISTERED' : 'ACTIVE' }}
+                      </td>
+                      <td>
+                        <span
+                          class="badge"
+                          [class.bad]="i === 0 && current().compliance === 'NONCOMPLIANT'"
+                          [class.good]="
+                            i !== 3 && (i !== 0 || current().compliance === 'COMPLIANT')
+                          "
+                          >{{
+                            i === 0 ? current().compliance : i === 3 ? 'UNKNOWN' : 'COMPLIANT'
+                          }}</span
+                        >
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <div class="preview-role-note">
+              @if (role() === 'Viewer') {
+                <strong>Viewer perspective.</strong> Provisioning and policy mutation controls are
+                absent.
+              } @else {
+                <strong>Administrator perspective.</strong> Device provisioning is available in the
+                authenticated Docker application.
+              }
+              <span
+                >Role selection here only illustrates the UI; it is not an authorization test.</span
+              >
+            </div>
+          </section>
+          <section class="device-inspector" aria-labelledby="inspector-title" aria-live="polite">
+            <div class="inspector-icon"><app-icon name="device" /></div>
+            <p class="eyebrow">DEVICE DETAILS</p>
+            <h2 id="inspector-title">{{ devices[selected()] }}</h2>
+            <p class="muted">Synthetic inventory record</p>
+            <dl class="inspector-facts">
+              <div>
+                <dt>Lifecycle</dt>
+                <dd>
+                  {{
+                    selected() === 0
+                      ? current().lifecycle
+                      : selected() === 3
+                        ? 'REGISTERED'
+                        : 'ACTIVE'
+                  }}
+                </dd>
+              </div>
+              <div>
+                <dt>Compliance</dt>
+                <dd>
+                  {{
+                    selected() === 0
+                      ? current().compliance
+                      : selected() === 3
+                        ? 'UNKNOWN'
+                        : 'COMPLIANT'
+                  }}
+                </dd>
+              </div>
+              <div class="inspector-wide">
+                <dt>Serial number</dt>
+                <dd class="mono">PREVIEW-00{{ selected() + 1 }}</dd>
+              </div>
+            </dl>
+            <div class="inspector-telemetry">
+              <h3>Illustrative settings</h3>
+              <div>
+                <span>Disk encryption</span
+                ><strong>{{
+                  selected() === 0 ? current().encryption : selected() === 3 ? 'Unknown' : 'Enabled'
+                }}</strong>
+              </div>
+              <div>
+                <span>Screen lock</span
+                ><strong>{{
+                  selected() === 3 || (selected() === 0 && stage() === 0) ? 'Unknown' : 'Enabled'
+                }}</strong>
+              </div>
+            </div>
+            <button class="outline-button" (click)="view.set('policies')">Inspect policy →</button>
+          </section>
+        </div>
+        <p class="muted preview-notice" role="status">{{ notice() }}</p>
+      } @else if (view() === 'policies') {
+        <p class="eyebrow">SECURITY / POLICY</p>
+        <h1>Mac security baseline</h1>
+        <p class="muted">Illustrative policy · version 1 · Mac devices</p>
+        <section class="panel">
+          <h2>Requirements</h2>
+          <div class="rule">
+            <span><strong>Disk encryption</strong><small>Protect data at rest</small></span
+            ><span class="badge">Required</span>
+          </div>
+          <div class="rule">
+            <span
+              ><strong>Minimum OS version</strong
+              ><small>Keep the fleet on the approved baseline</small></span
+            ><span class="badge">17.0</span>
+          </div>
+          <p class="preview-role-note">
+            The real application evaluates versioned policies in Spring Boot and stores immutable
+            evidence in DynamoDB. This page displays an illustrative policy; it does not run the
+            compliance engine.
+          </p>
+          <button class="outline-button" (click)="view.set('inventory'); chooseStage(2)">
+            Explore corrected report state →
+          </button>
+        </section>
+      } @else if (view() === 'evidence') {
+        <p class="eyebrow">PROVEN WORKFLOWS / LOCAL DOCKER</p>
+        <h1>From report to evidence.</h1>
+        <p class="muted">
+          Genuine captures from the authenticated application. These are separate from the synthetic
+          interactive preview.
+        </p>
+        <div class="evidence-grid">
+          @for (item of evidence; track item.file) {
+            <figure class="panel">
+              <a
+                [href]="'evidence/' + item.file"
+                target="_blank"
+                rel="noopener noreferrer"
+                [attr.aria-label]="'Open screenshot: ' + item.title"
+                ><img [src]="'evidence/' + item.file" [alt]="item.title" loading="lazy"
+              /></a>
+              <figcaption>
+                <h2>{{ item.title }}</h2>
+                <p>{{ item.caption }}</p>
+              </figcaption>
+            </figure>
+          }
+        </div>
+        <a
+          class="outline-button"
+          [href]="source + '/blob/main/docs/DEMO.md'"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Reproduce the workflow locally ↗</a
+        >
+      } @else {
+        <p class="eyebrow">ENGINEERING / FLEETOPS</p>
+        <h1>Built around explicit boundaries.</h1>
+        <p class="muted">Angular · Java 21 / Spring Boot · Keycloak · DynamoDB Local · Docker</p>
+        <div class="engineering-grid">
+          <section class="panel">
+            <h2>Identity and tenant isolation</h2>
+            <p>
+              The real API verifies JWT issuer, audience, organization membership and role.
+              Administrators provision; scoped machines report; viewers read.
+            </p>
+            <h2>Durable report integrity</h2>
+            <p>
+              Accepted report IDs, device state, evidence and audit writes are atomic. Replays do
+              not duplicate effects; conflicting IDs and stale reports are rejected.
+            </p>
+          </section>
+          <section class="panel">
+            <h2>Independent lifecycle and compliance</h2>
+            <p>
+              A failed policy does not retire a device. A passing policy does not reactivate one.
+              Unknown settings remain unknown.
+            </p>
+            <h2>Reproducible delivery</h2>
+            <p>
+              Docker and real authenticated browser tests accompany backend, frontend and simulator
+              checks. Terraform is an unapplied AWS foundation; no backend is hosted here.
+            </p>
+          </section>
+        </div>
+        <div class="actions">
+          <a class="outline-button" [href]="source" target="_blank" rel="noopener noreferrer"
+            >Explore source ↗</a
+          ><a
+            class="outline-button"
+            [href]="source + '/actions'"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Inspect CI ↗</a
+          ><a
+            class="outline-button"
+            [href]="source + '/blob/main/docs/DEMO.md'"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Run with Docker ↗</a
+          >
+        </div>
+      }
+      <footer>
+        FleetOps · Frontend proof of concept. All preview interactions stay in memory; reload to
+        reset.
+        <a [href]="source" target="_blank" rel="noopener noreferrer">Source &amp; local setup ↗</a>
+      </footer>
+    </main>
+  </div>
+</div>

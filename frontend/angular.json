@@ -61,6 +61,16 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "preview": {
+              "browser": "src/main.preview.ts",
+              "outputPath": "dist/preview",
+              "assets": [
+                {
+                  "glob": "**/*",
+                  "input": "preview-public"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"

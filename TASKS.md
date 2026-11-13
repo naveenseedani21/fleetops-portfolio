@@ -87,3 +87,6 @@ The initial application slices are implemented; the full eight-phase master spec
 - [ ] Hosting remains deferred until the owner approves the build.
 
 - [x] Operations inspector regressions: selection does not reload, unknown/legacy states stay distinct, tenant changes clear old data, stale page responses cannot restore it (20 frontend tests pass).
+
+
+Public portfolio update — 2026-11-13: owner approved a sanitized public copy and separate labeled frontend proof of concept. See PUBLICATION.md and USER_STORIES.md for audit scope, build isolation, real screenshot provenance and validation. The original private repository/data are preserved. No cloud backend or AWS deployment.
