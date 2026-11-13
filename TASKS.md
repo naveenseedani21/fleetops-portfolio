@@ -83,5 +83,7 @@ The initial application slices are implemented; the full eight-phase master spec
 - [x] Real native and isolated Docker acceptance, including MIN_OS failure/recovery, tenant/viewer/machine denials and retirement invariance.
 - [x] Preserve receipt/history fixes and A1–A3; actual native restart replay verified.
 - [x] Five-minute demo script, verified setup/limitations and genuine final screenshots.
-- [ ] Owner selects a frontend direction before implementation.
+- [x] Owner selected Operations; implement the header, navigation rail, real device inspector and consistent responsive theme.
 - [ ] Hosting remains deferred until the owner approves the build.
+
+- [x] Operations inspector regressions: selection does not reload, unknown/legacy states stay distinct, tenant changes clear old data, stale page responses cannot restore it (20 frontend tests pass).

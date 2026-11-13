@@ -4,10 +4,19 @@ import { KeyValuePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { Auth } from './auth';
+import { Icon } from './icon';
 import { Api, errorMessage } from './api';
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, KeyValuePipe, FormsModule, MatButtonModule],
+  imports: [
+    RouterLink,
+    RouterLinkActive,
+    RouterOutlet,
+    KeyValuePipe,
+    FormsModule,
+    MatButtonModule,
+    Icon,
+  ],
   templateUrl: './app.html',
 })
 export class App implements OnInit {

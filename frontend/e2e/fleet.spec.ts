@@ -179,3 +179,24 @@ test('viewer cannot provision or change policies and cannot cross the tenant bou
   await expect(page.getByRole('button', { name: '+ Create policy' })).toHaveCount(0);
   await page.screenshot({ path: testInfo.outputPath('viewer-policies.png'), fullPage: true });
 });
+
+test('Operations inventory inspector and responsive navigation use real device data', async ({ page }, testInfo) => {
+  await login(page, 'viewer', 'local-viewer-only');
+  const firstDevice = page.locator('.device-select').first();
+  await expect(firstDevice).toBeVisible();
+  const name = (await firstDevice.locator('.device-name').innerText()).trim();
+  await firstDevice.click();
+  const inspector = page.getByRole('region', { name, exact: true });
+  await expect(firstDevice).toHaveAttribute('aria-pressed', 'true');
+  await expect(inspector).toBeVisible();
+  await expect(inspector.getByRole('heading', { name, exact: true })).toBeVisible();
+  await expect(page.locator('.navigation-rail a.active')).toHaveAttribute('aria-current', 'page');
+  await page.screenshot({ path: testInfo.outputPath('operations-inventory.png'), fullPage: true });
+  await inspector.getByRole('link', { name: 'Open device record →', exact: true }).click();
+  await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+  await page.setViewportSize({ width: 375, height: 812 });
+  await expect(page.locator('.navigation-rail')).toHaveCSS('position', 'static');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await expect(page.getByRole('link', { name: 'Security policies', exact: true })).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath('operations-mobile.png'), fullPage: true });
+});

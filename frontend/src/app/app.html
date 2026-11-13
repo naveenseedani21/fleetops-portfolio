@@ -15,43 +15,64 @@
   </main>
 } @else {
   <a href="#main" class="skip">Skip to content</a>
+  <header class="operations-header">
+    <a routerLink="/devices" class="brand"><span class="brand-mark">F</span> FleetOps</a>
+    <div class="header-context">
+      <label class="organization-control"
+        >Organization
+        <select
+          aria-label="Organization"
+          [ngModel]="api.organization()"
+          (ngModelChange)="select($event)"
+        >
+          @for (org of api.memberships() | keyvalue; track org.key) {
+            @if (org.value !== 'INGESTOR') {
+              <option [value]="org.key">{{ org.key }}</option>
+            }
+          }
+        </select>
+      </label>
+      <div class="profile">
+        <span class="profile-role">{{ api.memberships()[api.organization()] }}</span>
+        <button mat-button aria-label="Sign out" (click)="auth.logout()">Sign out</button>
+      </div>
+    </div>
+  </header>
   <div class="shell">
-    <aside>
-      <a routerLink="/devices" class="brand"><span class="brand-mark">F</span> FleetOps</a>
-      <p class="nav-label">WORKSPACE</p>
+    <aside class="navigation-rail">
       <nav aria-label="Main navigation">
-        <a routerLink="/overview" routerLinkActive="active">◫ <span>Overview</span></a>
-        <a routerLink="/devices" routerLinkActive="active">▦ <span>Device inventory</span></a
-        ><a routerLink="/policies" routerLinkActive="active">◇ <span>Security policies</span></a
-        ><a routerLink="/audit" routerLinkActive="active">≡ <span>Audit activity</span></a>
+        <a
+          routerLink="/overview"
+          routerLinkActive="active"
+          ariaCurrentWhenActive="page"
+          title="Overview"
+          ><app-icon name="overview" /><span>Overview</span></a
+        >
+        <a
+          routerLink="/devices"
+          routerLinkActive="active"
+          ariaCurrentWhenActive="page"
+          title="Device inventory"
+          ><app-icon name="device" /><span>Device inventory</span></a
+        >
+        <a
+          routerLink="/policies"
+          routerLinkActive="active"
+          ariaCurrentWhenActive="page"
+          title="Security policies"
+          ><app-icon name="shield" /><span>Security policies</span></a
+        >
+        <a
+          routerLink="/audit"
+          routerLinkActive="active"
+          ariaCurrentWhenActive="page"
+          title="Audit activity"
+          ><app-icon name="history" /><span>Audit activity</span></a
+        >
       </nav>
+      <span class="rail-mark" aria-hidden="true">F</span>
     </aside>
     <div class="workspace">
-      <header>
-        <label
-          >Organization
-          <select
-            aria-label="Organization"
-            [ngModel]="api.organization()"
-            (ngModelChange)="select($event)"
-          >
-            @for (org of api.memberships() | keyvalue; track org.key) {
-              @if (org.value !== 'INGESTOR') {
-                <option [value]="org.key">{{ org.key }}</option>
-              }
-            }
-          </select></label
-        >
-        <div class="profile">
-          <span class="profile-role">{{ api.memberships()[api.organization()] }}</span><button
-            mat-button
-            aria-label="Sign out"
-            (click)="auth.logout()"
-          >
-            Sign out
-          </button>
-        </div>
-      </header>
       <main id="main">
         @if (error()) {
           <p class="error" role="alert">{{ error() }}</p>

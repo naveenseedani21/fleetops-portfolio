@@ -1,13 +1,14 @@
 import { lifecycleLabel } from './lifecycle';
-import { Component, inject, signal, effect } from '@angular/core';
+import { Component, inject, signal, effect, computed, untracked } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { Icon } from './icon';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { Api, Device, Page, errorMessage } from './api';
 @Component({
   selector: 'app-inventory',
-  imports: [DatePipe, RouterLink, ReactiveFormsModule, MatButtonModule],
+  imports: [DatePipe, RouterLink, ReactiveFormsModule, MatButtonModule, Icon],
   templateUrl: './inventory.html',
 })
 export class Inventory {
@@ -15,6 +16,16 @@ export class Inventory {
   readonly lifecycleLabel = lifecycleLabel;
   private readonly fb = inject(FormBuilder);
   readonly devices = signal<Device[]>([]);
+  readonly selectedId = signal<string | null>(null);
+  readonly selected = computed(
+    () => this.devices().find((device) => device.id === this.selectedId()) ?? null,
+  );
+  readonly activeCount = computed(
+    () => this.devices().filter((device) => device.status === 'ACTIVE').length,
+  );
+  readonly noncompliantCount = computed(
+    () => this.devices().filter((device) => device.compliance === 'NONCOMPLIANT').length,
+  );
   readonly next = signal<string | null>(null);
   readonly loading = signal(false);
   readonly saving = signal(false);
@@ -33,11 +44,15 @@ export class Inventory {
   constructor() {
     effect(() => {
       this.api.organization();
-      void this.load();
+      untracked(() => void this.load());
     });
   }
   async load(cursor?: string): Promise<void> {
     const run = ++this.generation;
+    const previousSelection = this.selectedId();
+    this.devices.set([]);
+    this.selectedId.set(null);
+    this.next.set(null);
     this.loading.set(true);
     this.error.set('');
     try {
@@ -46,6 +61,11 @@ export class Inventory {
       );
       if (run === this.generation) {
         this.devices.set(page.items);
+        this.selectedId.set(
+          page.items.find((device) => device.id === previousSelection)?.id ??
+            page.items[0]?.id ??
+            null,
+        );
         this.next.set(page.nextCursor);
       }
     } catch (e) {

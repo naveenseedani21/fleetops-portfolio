@@ -1,10 +1,8 @@
-<p class="eyebrow">WORKSPACE / INVENTORY</p>
+<p class="eyebrow">FLEET / INVENTORY</p>
 <div class="page-heading">
   <div>
     <h1>Device inventory</h1>
-    <p class="muted">
-      A live view of registered devices and their last evaluated security posture.
-    </p>
+    <p class="muted">Inventory, lifecycle and security posture.</p>
   </div>
   @if (api.admin) {
     <button mat-flat-button (click)="formOpen.set(!formOpen())">+ Register device</button>
@@ -53,63 +51,162 @@
     </form>
   </section>
 }
-<section class="panel">
-  <div class="section-heading">
-    <h2>
-      Registered devices <span class="count">{{ devices().length }} on this page</span>
-    </h2>
-    <button mat-button (click)="load()" [disabled]="loading()">Refresh</button>
+<div class="inventory-summary" aria-label="Current inventory page">
+  <span class="summary-context">Current page</span>
+  <div>
+    <strong>{{ devices().length }}</strong><span>Devices</span>
   </div>
-  @if (loading()) {
-    <p role="status">Loading inventory…</p>
-  } @else if (devices().length === 0) {
-    <div class="empty">
-      <h3>Your inventory starts here</h3>
-      <p>Register your first device to start tracking inventory and compliance.</p>
+  <div>
+    <strong>{{ activeCount() }}</strong><span>Active</span>
+  </div>
+  <div>
+    <strong>{{ noncompliantCount() }}</strong><span>Noncompliant</span>
+  </div>
+</div>
+<div class="inventory-layout">
+  <section class="panel inventory-list">
+    <div class="section-heading">
+      <h2>
+        Registered devices <span class="count">{{ devices().length }} on this page</span>
+      </h2>
+      <button mat-button (click)="load()" [disabled]="loading()">Refresh</button>
     </div>
-  } @else {
-    <div class="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Device</th>
-            <th>Operating system</th>
-            <th>Assigned to</th>
-            <th>Lifecycle</th>
-            <th>Compliance</th>
-            <th>Last check-in</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (device of devices(); track device.id) {
+    @if (loading()) {
+      <p role="status">Loading inventory…</p>
+    } @else if (devices().length === 0) {
+      <div class="empty">
+        <h3>Your inventory starts here</h3>
+        <p>Register your first device to start tracking inventory and compliance.</p>
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table>
+          <thead>
             <tr>
-              <td>
-                <a [routerLink]="['/devices', device.id]" class="device-name">{{
-                  device.name
-                }}</a><small>{{ device.model }} · {{ device.serial }}</small>
-              </td>
-              <td>{{ device.os }} {{ device.osVersion || 'Unknown' }}</td>
-              <td>{{ device.employee || 'Unassigned' }}</td>
-              <td>{{ lifecycleLabel(device) }}</td>
-              <td>
-                <span
-                  class="badge"
-                  [class.bad]="device.compliance === 'NONCOMPLIANT'"
-                  [class.good]="device.compliance === 'COMPLIANT'"
-                  >{{ device.compliance.replace('_', ' ') }}</span
-                >
-              </td>
-              <td>{{ device.lastCheckIn ? (device.lastCheckIn | date: 'medium') : 'Never' }}</td>
+              <th>Device</th>
+              <th>Operating system</th>
+              <th>Lifecycle</th>
+              <th>Compliance</th>
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (device of devices(); track device.id) {
+              <tr [class.selected-row]="selectedId() === device.id">
+                <td>
+                  <button
+                    type="button"
+                    class="device-select"
+                    [attr.aria-pressed]="selectedId() === device.id"
+                    (click)="selectedId.set(device.id)"
+                  >
+                    <app-icon name="device" /><span
+                      ><span class="device-name">{{ device.name }}</span
+                      ><small>{{ device.model }}</small></span
+                    >
+                  </button>
+                </td>
+                <td>{{ device.os }} {{ device.osVersion || 'Unknown' }}</td>
+                <td>{{ lifecycleLabel(device) }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.bad]="device.compliance === 'NONCOMPLIANT'"
+                    [class.good]="device.compliance === 'COMPLIANT'"
+                    >{{ device.compliance.replace('_', ' ') }}</span
+                  >
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    <div class="pagination">
+      <span class="muted">{{ devices().length }} devices on this page</span
+      ><button mat-stroked-button [disabled]="!next() || loading()" (click)="load(next()!)">
+        Next page →
+      </button>
     </div>
-  }
-  <div class="pagination">
-    <span class="muted">{{ devices().length }} devices on this page</span
-    ><button mat-stroked-button [disabled]="!next() || loading()" (click)="load(next()!)">
-      Next page →
-    </button>
-  </div>
-</section>
+  </section>
+
+  <section class="device-inspector" aria-labelledby="inspector-title" aria-live="polite">
+    @if (selected(); as device) {
+      <div class="inspector-icon"><app-icon name="device" /></div>
+      <p class="eyebrow">DEVICE DETAILS</p>
+      <h2 id="inspector-title">{{ device.name }}</h2>
+      <p class="muted">{{ device.model }}</p>
+      <dl class="inspector-facts">
+        <div>
+          <dt>Lifecycle</dt>
+          <dd>{{ lifecycleLabel(device) }}</dd>
+        </div>
+        <div>
+          <dt>Compliance</dt>
+          <dd>
+            <span
+              class="badge"
+              [class.bad]="device.compliance === 'NONCOMPLIANT'"
+              [class.good]="device.compliance === 'COMPLIANT'"
+              >{{ device.compliance.replace('_', ' ') }}</span
+            >
+          </dd>
+        </div>
+        <div>
+          <dt>Operating system</dt>
+          <dd>{{ device.os }} {{ device.osVersion || 'Unknown' }}</dd>
+        </div>
+        <div>
+          <dt>Assigned to</dt>
+          <dd>{{ device.employee || 'Unassigned' }}</dd>
+        </div>
+        <div class="inspector-wide">
+          <dt>Serial number</dt>
+          <dd class="mono">{{ device.serial }}</dd>
+        </div>
+        <div class="inspector-wide">
+          <dt>Last check-in</dt>
+          <dd>{{ device.lastCheckIn ? (device.lastCheckIn | date: 'medium') : 'Never' }}</dd>
+        </div>
+      </dl>
+      <div class="inspector-telemetry">
+        <h3>Reported settings</h3>
+        <div>
+          <span>Disk encryption</span
+          ><strong>{{
+            device.encryption === null ? 'Unknown' : device.encryption ? 'Enabled' : 'Disabled'
+          }}</strong>
+        </div>
+        <div>
+          <span>Screen lock</span
+          ><strong>{{
+            device.screenLock === null ? 'Unknown' : device.screenLock ? 'Enabled' : 'Disabled'
+          }}</strong>
+        </div>
+        <div>
+          <span>Firewall</span
+          ><strong>{{
+            device.type !== 'MAC'
+              ? 'Not applicable'
+              : device.firewall === null
+                ? 'Unknown'
+                : device.firewall
+                  ? 'Enabled'
+                  : 'Disabled'
+          }}</strong>
+        </div>
+      </div>
+      <a mat-stroked-button class="inspector-link" [routerLink]="['/devices', device.id]"
+        >Open device record →</a
+      >
+    } @else {
+      <h2 id="inspector-title">Device details</h2>
+      <p class="muted">
+        {{
+          loading()
+            ? 'Loading device details…'
+            : 'Select a device to inspect its inventory and security posture.'
+        }}
+      </p>
+    }
+  </section>
+</div>
