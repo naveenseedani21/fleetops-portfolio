@@ -10,3 +10,4 @@ __pycache__/
 *.tfplan
 playwright-report/
 test-results/
+.fleetops-state*

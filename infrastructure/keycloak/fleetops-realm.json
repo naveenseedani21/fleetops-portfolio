@@ -1,0 +1,134 @@
+{
+  "realm": "fleetops",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "accessTokenLifespan": 300,
+  "clients": [
+    {
+      "clientId": "fleetops-web",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": [
+        "http://localhost:4200/*"
+      ],
+      "webOrigins": [
+        "http://localhost:4200"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "protocolMappers": [
+        {
+          "name": "api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "fleetops-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        },
+        {
+          "name": "organizations",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "organizations",
+            "claim.name": "organizations",
+            "jsonType.label": "JSON",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "multivalued": "false"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "fleetops-simulator",
+      "publicClient": false,
+      "secret": "local-simulator-secret-not-for-production",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "protocolMappers": [
+        {
+          "name": "api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "fleetops-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        },
+        {
+          "name": "organizations",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "organizations",
+            "claim.name": "organizations",
+            "jsonType.label": "JSON",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "multivalued": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "firstName": "Demo",
+      "lastName": "Administrator",
+      "email": "admin@example.invalid",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "local-admin-only",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "organizations": [
+          "{\"demo\": \"ADMIN\", \"lab\": \"ADMIN\"}"
+        ]
+      }
+    },
+    {
+      "username": "viewer",
+      "enabled": true,
+      "firstName": "Demo",
+      "lastName": "Viewer",
+      "email": "viewer@example.invalid",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "local-viewer-only",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "organizations": [
+          "{\"demo\": \"VIEWER\"}"
+        ]
+      }
+    },
+    {
+      "username": "service-account-fleetops-simulator",
+      "enabled": true,
+      "serviceAccountClientId": "fleetops-simulator",
+      "attributes": {
+        "organizations": [
+          "{\"demo\": \"INGESTOR\"}"
+        ]
+      }
+    }
+  ]
+}

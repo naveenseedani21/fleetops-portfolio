@@ -1,0 +1,43 @@
+services:
+  dynamodb:
+    image: amazon/dynamodb-local:2.6.1
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-dbPath", "./data"]
+    user: root
+    volumes: ["dynamodb-data:/home/dynamodblocal/data"]
+    ports: ["127.0.0.1:8000:8000"]
+  init-db:
+    image: amazon/aws-cli:2.31.18
+    entrypoint: ["/bin/sh", "/scripts/init-db.sh"]
+    environment:
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      AWS_DEFAULT_REGION: us-east-1
+    volumes: ["./scripts:/scripts:ro"]
+    depends_on: [dynamodb]
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.2
+    command: ["start-dev", "--import-realm", "--hostname=http://localhost:8180"]
+    volumes: ["./infrastructure/keycloak:/opt/keycloak/data/import:ro", "keycloak-data:/opt/keycloak/data"]
+    ports: ["127.0.0.1:8180:8080"]
+  backend:
+    build: ./backend
+    environment:
+      DYNAMODB_ENDPOINT: http://dynamodb:8000
+      DYNAMODB_TABLE: fleetops
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      OIDC_ISSUER: http://localhost:8180/realms/fleetops
+      OIDC_JWKS: http://keycloak:8080/realms/fleetops/protocol/openid-connect/certs
+      OIDC_AUDIENCE: fleetops-api
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on:
+      init-db: {condition: service_completed_successfully}
+      keycloak: {condition: service_started}
+  frontend:
+    build: ./frontend
+    ports: ["127.0.0.1:4200:8080"]
+    depends_on: [backend]
+volumes:
+  dynamodb-data:
+  keycloak-data:
