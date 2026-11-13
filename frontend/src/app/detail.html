@@ -24,11 +24,17 @@
   <div class="detail-grid">
     <section class="panel">
       <h2>Device information</h2>
+      @if (lifecycleNeedsReview(d)) {
+        <p class="notice">
+          Lifecycle needs review. A new check-in or an authorized retirement can establish its next
+          state.
+        </p>
+      }
       <dl>
         <dt>Operating system</dt>
         <dd>{{ d.os }} {{ d.osVersion || 'Unknown' }}</dd>
         <dt>Lifecycle</dt>
-        <dd>{{ d.status }}</dd>
+        <dd>{{ lifecycleLabel(d) }}</dd>
         <dt>Last check-in</dt>
         <dd>{{ d.lastCheckIn ? (d.lastCheckIn | date: 'medium') : 'Never' }}</dd>
         <dt>Disk encryption</dt>

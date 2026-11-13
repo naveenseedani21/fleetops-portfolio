@@ -5,10 +5,10 @@ Assets: tenant inventory, employee assignment labels, compliance evidence, ident
 | Operation | ADMIN | VIEWER | INGESTOR | Platform role alone |
 |---|---|---|---|---|
 | Read tenant inventory/policies/audit | yes | yes | no | no |
-| Register synthetic devices | yes | no | yes | no |
+| Register synthetic devices | yes | no | no | no |
 | Update metadata / retire | yes | no | no | no |
 | Change policies / evaluate | yes | no | no | no |
-| Submit reports | yes | no | yes | no |
+| Submit reports to existing devices | yes | no | scoped | no |
 | Organization/member administration | not implemented | no | no | not implemented |
 
 Controls tested: unauthenticated denial; other-tenant denial; viewer mutation denial; ingestion-only read denial; platform-role non-escalation; actual JWT signature/issuer/audience/expiry validation; optimistic state protection and duplicate registration transactions.
@@ -34,7 +34,7 @@ Likelihood/impact below are qualitative design assessments, not measured inciden
 | Spoofing: forged/expired/not-yet-valid token | API identity | Medium / high | Signature, issuer, audience, time validation | TokenValidationTest uses actual signed tokens | Explicit token-type/scopes contract and production issuer configuration still needed |
 | Spoofing: stolen browser token | Angular/OIDC | Medium / high | PKCE, sessionStorage, short local token lifetime, CSP in nginx | Auth/interceptor tests; historical real login | XSS can read session tokens; production HTTPS/CSP not deployed |
 | Elevation: cross-tenant request | Services/Store | Medium / high | Verified membership before tenant reads/writes; reconstructed partition | FleetIntegrationTest device/policy/audit boundaries | No exhaustive endpoint matrix; provider membership administrators remain trusted |
-| Elevation: overprivileged machine token | Simulator/API | Medium / high | INGESTOR denied reads, metadata, policy edits and evaluation | Ingestor denial regression tests | Registration allowed despite report-only requirement; pending A2 |
+| Elevation: overprivileged machine token | Simulator/API | Medium / high | INGESTOR denied registration, reads, metadata, policy edits and evaluation; optional signed device scopes | Ingestor denial regression tests | Provider-managed scope configuration and short-lived credential rotation remain operational responsibilities |
 | Tampering: lost updates/partial writes | DynamoDB | Medium / high | Expected revisions and transactions | Duplicate/optimistic-lock tests; conflicting-transaction no-partial-audit test | Production IAM/throughput behavior not validated; concurrent policy snapshot is not globally atomic |
 | Tampering: stale/replayed telemetry | Ingestion | Medium / high | Sequence/time/hash checks and latest replay no-op | MIN_OS recovery/stale-report test; report replay test | Old report IDs can be reused after intervening reports; durable ledger missing |
 | Repudiation: audit modification or absent denial evidence | Audit/storage | Medium / high | Success audits atomic; no application update/delete audit routes | Persistence/audit counts in integration tests | AWS principals may alter records; immutable archive and persistent denial events absent |
@@ -42,4 +42,4 @@ Likelihood/impact below are qualitative design assessments, not measured inciden
 | Denial of service: unbounded reads or submissions | API/DynamoDB | Medium / high | Page bounds, 20-policy evaluation cap, 1,000-device overview cap, simulator pacing | Page/summary tests; code inspection | No server rate limiter, payload-budget review or measured load test |
 | Cloud misconfiguration | IAM/network/OIDC | Unknown / high | Foundation task role/table scope, deletion protection, private repo, no deployment | Terraform validation and static review only | Complete network/TLS/hosting/IAM runtime validation absent; owner approval required |
 
-A passing unit/integration suite does not establish production security. The lifecycle bug, limited report ledger and CI/Docker limitations are tracked in SPEC_AUDIT.md, not silently accepted.
+A passing unit/integration suite does not establish production security. Legacy lifecycle ambiguity, limited report ledger and CI/Docker limitations are tracked in SPEC_AUDIT.md, not silently accepted.

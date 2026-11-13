@@ -4,14 +4,14 @@ Inspect environment variables/targets before tests. Do not print secrets. Use lo
 
 ## Backend
 
-With Java21/Maven and Docker:
+With Java21/Maven, Python3.11+ and Docker:
 
 ```sh
 AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local AWS_REGION=us-east-1 \
   mvn -B -f backend/pom.xml spotless:check verify
 ```
 
-FleetIntegrationTest starts an in-memory DynamoDB Local Testcontainer by default. If Docker is unavailable, start DynamoDB Local separately, then explicitly point at loopback:
+FleetIntegrationTest and SimulatorWorkflowTest each start an in-memory DynamoDB Local Testcontainer by default. If Docker is unavailable, start DynamoDB Local separately, then explicitly point at loopback:
 
 ```sh
 TEST_DYNAMODB_ENDPOINT=http://localhost:8000 \
@@ -19,7 +19,7 @@ AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local AWS_REGION=us-east-1 \
   mvn -B -f backend/pom.xml spotless:check verify
 ```
 
-The override must point to a disposable local emulator. The integration suite creates a random `fleetops-test-UUID` table and randomized tenants. With an external emulator it leaves that test table behind; it does not delete existing tables. No cleanup or remote reset is implicit. TokenValidationTest uses an ephemeral loopback JWKS server, and HealthProbeTest substitutes the DynamoDB client beneath the real health indicator to simulate outages without stopping a database.
+The override must point to a disposable local emulator. The integration suite creates random `fleetops-test-UUID` and `fleetops-sim-test-UUID` tables and randomized tenants. With an external emulator it leaves that test table behind; it does not delete existing tables. No cleanup or remote reset is implicit. TokenValidationTest uses an ephemeral loopback JWKS server, and HealthProbeTest substitutes the DynamoDB client beneath the real health indicator to simulate outages without stopping a database.
 
 Tests cover actual DynamoDB condition/transaction/query behavior, but local emulation does not prove production IAM, AWS throttling, Docker image startup or deployed network behavior. Spring Security's MockMvc JWT helper tests authorization, while TokenValidationTest separately exercises real RSA signatures/claims. No coverage percentage is measured until JaCoCo is added.
 
@@ -33,10 +33,15 @@ npm run lint
 npm test
 npm run build
 cd ..
-python3 -m unittest discover -s simulator -v
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -e 'simulator[dev]'
+ruff check simulator
+python -m pytest simulator -q
+python -m unittest discover -s simulator -v
 ```
 
-Use Node22 and the committed lockfile. Frontend component mocks test form, retry and response-ordering behavior; they do not prove server authorization. Simulator unit tests are offline and do not call an identity provider or API.
+Use Node22 and the committed lockfile. Frontend component mocks test form, retry and response-ordering behavior; they do not prove server authorization. Simulator unit tests use in-memory responses and a short-lived loopback redirect fixture; they do not call an external identity provider or API. The separate backend SimulatorWorkflowTest runs the real Python CLI over HTTP with signed JWTs and DynamoDB Local, exercising provisioning, restricted reporting, compliance recovery and unchanged state/evidence after duplicate/stale submissions. It requires the sibling simulator directory and python3 executable. CI installs Python explicitly for this test.
 
 ## Browser and infrastructure
 

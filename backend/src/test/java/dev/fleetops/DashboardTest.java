@@ -44,14 +44,14 @@ class DashboardTest {
         DashboardService.calculate(
             List.of(
                 d("ACTIVE", "COMPLIANT", now),
-                d("NONCOMPLIANT", "NONCOMPLIANT", now),
+                d("ACTIVE", "NONCOMPLIANT", now),
                 d("REGISTERED", "UNKNOWN", null),
                 d("ACTIVE", "NOT_APPLICABLE", now.minusSeconds(86401)),
                 d("RETIRED", "COMPLIANT", now)),
             now);
     assertEquals(5, result.total());
     assertEquals(1, result.retired());
-    assertEquals(2, result.active());
+    assertEquals(3, result.active());
     assertEquals(2, result.stale());
     assertEquals(1, result.noncompliant());
     assertEquals(1, result.unknown());
@@ -63,5 +63,20 @@ class DashboardTest {
   @Test
   void emptyFleetHasNoMisleadingPercentage() {
     assertNull(DashboardService.calculate(List.of(), now).compliancePercent());
+  }
+
+  @Test
+  void lifecycleAndComplianceAreIndependentAndLegacyIsNotAssumedActive() {
+    var result =
+        DashboardService.calculate(
+            List.of(
+                d("ACTIVE", "NONCOMPLIANT", now.minusSeconds(86401)),
+                d("INACTIVE", "COMPLIANT", now),
+                d("NONCOMPLIANT", "NONCOMPLIANT", now)),
+            now);
+    assertEquals(1, result.active());
+    assertEquals(2, result.noncompliant());
+    assertEquals(1, result.stale());
+    assertEquals(1, result.lifecycleReviewRequired());
   }
 }

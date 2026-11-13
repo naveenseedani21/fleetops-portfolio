@@ -1,3 +1,4 @@
+import { lifecycleLabel } from './lifecycle';
 import { Component, inject, signal, effect } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -11,6 +12,7 @@ import { Api, Device, Page, errorMessage } from './api';
 })
 export class Inventory {
   readonly api = inject(Api);
+  readonly lifecycleLabel = lifecycleLabel;
   private readonly fb = inject(FormBuilder);
   readonly devices = signal<Device[]>([]);
   readonly next = signal<string | null>(null);

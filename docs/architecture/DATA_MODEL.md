@@ -22,3 +22,11 @@ Expected initial scale: hundreds of devices/tenant. Transaction/item limits boun
 No TTL is configured. Device records, policy versions, compliance evaluations and audit records currently remain until an explicitly authorized deletion outside the application. There is no audit-delete API. Raw reports are not retained: only the device's latest report ID/hash/sequence and resulting evidence survive; this does not satisfy recent-report history or a durable deduplication ledger.
 
 Simulator state remains in its local JSON file, including pending requests for recovery. Local Compose volumes survive an ordinary stop. Random test tables in an externally running DynamoDB Local emulator remain after tests; Testcontainers-owned ephemeral databases stop with the suite. No retention period, automatic expiration, or bulk cleanup is approved by this document. Define report/evidence/audit retention and recovery requirements before adding a ledger or TTL; do not automatically expire audit evidence.
+
+## Approved lifecycle correction (A3)
+
+Reuse existing `Device.status` for lifecycle and `Device.compliance` for posture. Compliance evaluation no longer writes NONCOMPLIANT into lifecycle or reactivates INACTIVE devices. Legitimate check-in and administrator retirement transitions remain separate. No bulk migration, key change, history rewrite or parallel status model was introduced.
+
+`DeviceLifecycle` provides read compatibility. A legacy NONCOMPLIANT record with sequence=0 and no check-in/report ID/hash is reliably a never-reported registration and is exposed as REGISTERED. Ambiguous records retain their stored legacy value, are labeled Needs review in the UI and counted by `lifecycleReviewRequired`; no blanket ACTIVE inference is made. Read paths never persist conversions. A later authorized write can persist the reliable resolved lifecycle, while ambiguous metadata/evaluation writes preserve the ambiguous value until a real check-in or retirement establishes state. Retired records stay retired. Dashboard active count is now based on lifecycle, separate from compliance and 24-hour freshness.
+
+History key precision and the bounded latest-report ledger remain separate unresolved audit findings. This correction does not change their keys or retention semantics.

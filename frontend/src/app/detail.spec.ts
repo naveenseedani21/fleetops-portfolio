@@ -53,7 +53,7 @@ async function setup() {
   const fixture = TestBed.createComponent(Detail);
   fixture.detectChanges();
   await fixture.whenStable();
-  return { page: fixture.componentInstance, api };
+  return { page: fixture.componentInstance, api, fixture };
 }
 describe('Device evidence history', () => {
   it('appends older evidence and removes pagination at the end', async () => {
@@ -93,5 +93,26 @@ describe('Device evidence history', () => {
     await pending;
     expect(page.history()).toEqual([evidence]);
     expect(page.historyNext()).toBe('next+/=');
+  });
+});
+
+describe('Device lifecycle presentation', () => {
+  it('shows active lifecycle alongside failed compliance', async () => {
+    const { page, fixture } = await setup();
+    page.device.set({ ...device, status: 'ACTIVE', compliance: 'NONCOMPLIANT' });
+    fixture.detectChanges();
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('ACTIVE');
+    expect(text).toContain('NONCOMPLIANT');
+    expect(text).not.toContain('Lifecycle needs review');
+  });
+  it('flags ambiguous legacy lifecycle without masking compliance', async () => {
+    const { page, fixture } = await setup();
+    page.device.set({ ...device, status: 'NONCOMPLIANT', compliance: 'NONCOMPLIANT' });
+    fixture.detectChanges();
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('Needs review');
+    expect(text).toContain('Lifecycle needs review');
+    expect(text).toContain('NONCOMPLIANT');
   });
 });

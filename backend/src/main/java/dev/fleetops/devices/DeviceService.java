@@ -39,7 +39,9 @@ public class DeviceService {
 
   public Store.Page<Device> list(String org, int limit, String cursor) {
     access.require(org, false);
-    return store.list(org, "DEVICE#", limit, cursor, Device.class, false);
+    var page = store.list(org, "DEVICE#", limit, cursor, Device.class, false);
+    return new Store.Page<>(
+        page.items().stream().map(DeviceLifecycle::readable).toList(), page.nextCursor());
   }
 
   public Device get(String org, String id) {
@@ -48,11 +50,11 @@ public class DeviceService {
   }
 
   private Device read(String org, String id) {
-    return store.get(org, "DEVICE#" + id, Device.class);
+    return DeviceLifecycle.readable(store.get(org, "DEVICE#" + id, Device.class));
   }
 
   public Device register(String org, DeviceRequests.Register input) {
-    String actor = access.ingest(org);
+    String actor = access.require(org, true);
     Instant now = Instant.now();
     String id = UUID.randomUUID().toString();
     String expectedOs =
@@ -147,7 +149,7 @@ public class DeviceService {
   }
 
   public Device report(String org, String id, DeviceRequests.Report input) {
-    String actor = access.ingest(org);
+    String actor = access.ingest(org, id);
     Device d = read(org, id);
     assertLive(d);
     String hash = digest(input);
@@ -273,10 +275,6 @@ public class DeviceService {
   }
 
   private Device withCompliance(Device d, String compliance) {
-    String status =
-        compliance.equals("NONCOMPLIANT")
-            ? "NONCOMPLIANT"
-            : d.lastCheckIn() == null ? "REGISTERED" : "ACTIVE";
     return new Device(
         d.id(),
         d.organizationId(),
@@ -288,7 +286,7 @@ public class DeviceService {
         d.osVersion(),
         d.serial(),
         d.employee(),
-        status,
+        d.status(),
         d.encryption(),
         d.screenLock(),
         d.firewall(),

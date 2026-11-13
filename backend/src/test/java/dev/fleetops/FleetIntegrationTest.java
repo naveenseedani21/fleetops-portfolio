@@ -446,4 +446,157 @@ class FleetIntegrationTest {
     assertEquals(1, events.items().size());
     assertEquals("DEVICE_REGISTERED", events.items().get(0).action());
   }
+
+  @Test
+  void adminProvisioningAndScopedMachinesAreEnforcedWithoutSideEffects() throws Exception {
+    String org = UUID.randomUUID().toString();
+    String registration =
+        "{\"name\":\"Unauthorized\",\"type\":\"MAC\",\"model\":\"Mac\",\"os\":\"macOS\",\"serial\":\"DENIED-001\"}";
+    for (var principal :
+        List.of(role(org, "VIEWER"), role(org, "INGESTOR"), role("other", "ADMIN"))) {
+      mvc.perform(
+              post(base(org) + "/devices")
+                  .with(principal)
+                  .contentType("application/json")
+                  .content(registration))
+          .andExpect(status().isForbidden());
+    }
+    mvc.perform(get(base(org) + "/devices").with(role(org, "ADMIN")))
+        .andExpect(jsonPath("$.items.length()").value(0));
+    mvc.perform(get(base(org) + "/audit-events").with(role(org, "ADMIN")))
+        .andExpect(jsonPath("$.items.length()").value(0));
+    JsonNode device = json.readTree(register(org, "ALLOWED-001"));
+    String id = device.get("id").asText();
+    String path = base(org) + "/devices/" + id + "/reports";
+    String report =
+        "{\"reportId\":\"scoped\",\"sequence\":1,\"reportedAt\":\"2026-01-01T00:00:00Z\"}";
+    for (var principal :
+        List.of(
+            role("other", "INGESTOR"),
+            role(org, "VIEWER"),
+            jwt()
+                .jwt(
+                    j ->
+                        j.subject("machine")
+                            .claim("organizations", Map.of(org, "INGESTOR"))
+                            .claim("device_scopes", Map.of(org, List.of("another-device")))),
+            jwt()
+                .jwt(
+                    j ->
+                        j.subject("machine")
+                            .claim("organizations", Map.of(org, "INGESTOR"))
+                            .claim("device_scopes", Map.of(org, List.of()))),
+            jwt()
+                .jwt(
+                    j ->
+                        j.subject("machine")
+                            .claim("organizations", Map.of(org, "INGESTOR"))
+                            .claim("device_scopes", "malformed")))) {
+      mvc.perform(post(path).with(principal).contentType("application/json").content(report))
+          .andExpect(status().isForbidden());
+    }
+    mvc.perform(
+            post(base(org) + "/devices/unknown/reports")
+                .with(role(org, "INGESTOR"))
+                .contentType("application/json")
+                .content(report))
+        .andExpect(status().isNotFound());
+    mvc.perform(get(base(org) + "/devices/" + id).with(role(org, "ADMIN")))
+        .andExpect(jsonPath("$.revision").value(1));
+    mvc.perform(get(base(org) + "/audit-events").with(role(org, "ADMIN")))
+        .andExpect(jsonPath("$.items.length()").value(1));
+    mvc.perform(
+            post(path)
+                .with(
+                    jwt()
+                        .jwt(
+                            j ->
+                                j.subject("machine")
+                                    .claim("organizations", Map.of(org, "INGESTOR"))
+                                    .claim("device_scopes", Map.of(org, List.of(id)))))
+                .contentType("application/json")
+                .content(report))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("ACTIVE"));
+  }
+
+  @Test
+  void evaluationFailureAndRecoveryDoNotChangeLifecycle() throws Exception {
+    for (String lifecycle : List.of("REGISTERED", "ACTIVE", "INACTIVE")) {
+      String org = UUID.randomUUID().toString();
+      JsonNode registered = json.readTree(register(org, "STATE-001"));
+      String id = registered.get("id").asText();
+      var stored = (com.fasterxml.jackson.databind.node.ObjectNode) registered;
+      stored.put("status", lifecycle);
+      var device = json.treeToValue(stored, dev.fleetops.devices.Device.class);
+      var store = new dev.fleetops.persistence.Store(db, json, TABLE);
+      store.commit(
+          org, List.of(new dev.fleetops.persistence.Store.Change("DEVICE#" + id, device, 1, 1L)));
+      String policy =
+          "{\"version\":0,\"name\":\"OS baseline\",\"targetTypes\":[\"MAC\"],\"rules\":[{\"type\":\"MIN_OS\",\"value\":\"16\"}],\"severity\":\"HIGH\",\"enabled\":true}";
+      JsonNode p =
+          json.readTree(
+              mvc.perform(
+                      post(base(org) + "/policies")
+                          .with(role(org, "ADMIN"))
+                          .contentType("application/json")
+                          .content(policy))
+                  .andExpect(status().isCreated())
+                  .andReturn()
+                  .getResponse()
+                  .getContentAsString());
+      String path = base(org) + "/devices/" + id;
+      mvc.perform(post(path + "/evaluations").with(role(org, "ADMIN")))
+          .andExpect(jsonPath("$.status").value("NONCOMPLIANT"));
+      mvc.perform(get(path).with(role(org, "VIEWER")))
+          .andExpect(jsonPath("$.status").value(lifecycle))
+          .andExpect(jsonPath("$.compliance").value("NONCOMPLIANT"));
+      mvc.perform(
+              put(base(org) + "/policies/" + p.get("id").asText())
+                  .with(role(org, "ADMIN"))
+                  .contentType("application/json")
+                  .content(
+                      policy.replace("\"version\":0", "\"version\":1").replace("\"16\"", "\"15\"")))
+          .andExpect(status().isOk());
+      mvc.perform(post(path + "/evaluations").with(role(org, "ADMIN")))
+          .andExpect(jsonPath("$.status").value("COMPLIANT"));
+      mvc.perform(get(path).with(role(org, "VIEWER")))
+          .andExpect(jsonPath("$.status").value(lifecycle))
+          .andExpect(jsonPath("$.compliance").value("COMPLIANT"));
+    }
+  }
+
+  @Test
+  void legacyLifecycleReadsAreConservativeAndNeverRewriteStorage() throws Exception {
+    String org = UUID.randomUUID().toString();
+    var store = new dev.fleetops.persistence.Store(db, json, TABLE);
+    for (int sequence : List.of(0, 1)) {
+      var raw =
+          (com.fasterxml.jackson.databind.node.ObjectNode)
+              json.readTree(register(org, "LEGACY-00" + sequence));
+      String id = raw.get("id").asText();
+      raw.put("status", "NONCOMPLIANT");
+      raw.put("compliance", "NONCOMPLIANT");
+      raw.put("sequence", sequence);
+      if (sequence > 0) {
+        raw.put("lastCheckIn", "2026-01-01T00:00:00Z");
+        raw.put("lastReportId", "legacy");
+        raw.put("lastReportHash", "legacy-hash");
+      }
+      var legacy = json.treeToValue(raw, dev.fleetops.devices.Device.class);
+      store.commit(
+          org, List.of(new dev.fleetops.persistence.Store.Change("DEVICE#" + id, legacy, 1, 1L)));
+      mvc.perform(get(base(org) + "/devices/" + id).with(role(org, "VIEWER")))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.status").value(sequence == 0 ? "REGISTERED" : "NONCOMPLIANT"))
+          .andExpect(jsonPath("$.compliance").value("NONCOMPLIANT"));
+      assertEquals(legacy, store.get(org, "DEVICE#" + id, dev.fleetops.devices.Device.class));
+    }
+    mvc.perform(get(base(org) + "/dashboard/summary").with(role(org, "VIEWER")))
+        .andExpect(jsonPath("$.active").value(0))
+        .andExpect(jsonPath("$.noncompliant").value(2))
+        .andExpect(jsonPath("$.lifecycleReviewRequired").value(1));
+    mvc.perform(get(base(org) + "/devices").with(role(org, "VIEWER")))
+        .andExpect(jsonPath("$.items.length()").value(2));
+  }
 }

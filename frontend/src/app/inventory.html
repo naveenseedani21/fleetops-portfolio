@@ -90,7 +90,7 @@
               </td>
               <td>{{ device.os }} {{ device.osVersion || 'Unknown' }}</td>
               <td>{{ device.employee || 'Unassigned' }}</td>
-              <td>{{ device.status }}</td>
+              <td>{{ lifecycleLabel(device) }}</td>
               <td>
                 <span
                   class="badge"

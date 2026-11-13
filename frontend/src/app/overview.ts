@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { Api, Audit, Page, errorMessage } from './api';
 interface Summary {
   total: number;
+  lifecycleReviewRequired?: number;
   retired: number;
   active: number;
   stale: number;
@@ -35,6 +36,13 @@ interface Summary {
       <p role="status">Calculating fleet summary…</p>
     }
     @if (summary(); as s) {
+      @if (s.lifecycleReviewRequired) {
+        <p class="notice">
+          {{ s.lifecycleReviewRequired }}
+          {{ s.lifecycleReviewRequired === 1 ? 'device needs' : 'devices need' }} lifecycle review.
+          <a routerLink="/devices">Review inventory</a>
+        </p>
+      }
       <div class="metric-grid">
         <section class="panel metric">
           <span>Total registered</span><strong>{{ s.total }}</strong
@@ -42,7 +50,7 @@ interface Summary {
         </section>
         <section class="panel metric">
           <span>Active devices</span><strong>{{ s.active }}</strong
-          ><small>Checked in within 24 hours</small>
+          ><small>Devices with active lifecycle</small>
         </section>
         <section class="panel metric">
           <span>Noncompliant</span><strong>{{ s.noncompliant }}</strong

@@ -2,20 +2,20 @@
 
 - Read docs/PROGRESS.md, docs/SPEC_AUDIT.md, PLAN.md and TASKS.md before major work.
 - Preserve existing work. Audit requirements are in docs/requirements/2026-11-13-audit-instructions.txt.
-- Ask before replacing frameworks, auth, persistence, API contracts, stored-data semantics, or deployments. Pending decisions are A1–A3 in SPEC_AUDIT.md; do not infer approval from an ADR.
+- Ask before replacing frameworks, auth, persistence, API contracts, stored-data semantics, or deployments. A1–A3 targeted changes are approved in docs/requirements/2026-11-13-approved-remediation.md; preserve their limits. Do not infer broader approval from an ADR.
 - Java21/Spring Boot modular monolith: backend/src/main/java/dev/fleetops/{identity,devices,policies,compliance,audit,reporting,persistence,shared}.
 - Angular standalone/Signals/Reactive Forms/Material under frontend; Python simulator communicates only through authenticated HTTP.
 - Authorize the tenant before every service read/write. Never trust a route organization without verified membership. Platform roles do not bypass tenant isolation.
 - Preserve optimistic revisions and atomic device/evidence/audit writes. Do not replace Query with Scan or silently drop policies/records at pagination limits.
 - Keep unknown telemetry distinct from passing. Policy versions and historical evidence remain immutable.
-- Preserve current API names and state files. Lifecycle/INGESTOR/report-ledger deviations require the decisions documented in the audit.
+- Preserve current API names and state files. Lifecycle/INGESTOR corrections follow A2/A3; report-ledger/key migrations still require a concrete reviewed proposal.
 - Keep professional product copy and consistent existing styles; implementation limitations belong in documentation. Do not imply physical MDM capability.
 - No secrets/tokens/personal data in logs or commits. Local public realm credentials are development fixtures, never production credentials.
 - Do not provision/delete cloud resources, reset shared data, enable deployment or incur charges without explicit approval. Hosting awaits owner build review.
 - Inspect test targets before execution. Use Docker's ephemeral DynamoDB or an explicitly loopback TEST_DYNAMODB_ENDPOINT with dummy AWS credentials, never cloud credentials.
 - Backend: Java21; `mvn -f backend/pom.xml spotless:check verify` (Docker required unless local TEST_DYNAMODB_ENDPOINT is supplied).
 - Frontend: Node22; `cd frontend && npm run format:check && npm run lint && npm test && npm run build`.
-- Simulator: `python3 -m unittest discover -s simulator -v`.
+- Simulator: virtualenv, `pip install -e 'simulator[dev]'`, `ruff check simulator`, `python -m pytest simulator -q`; retain `python3 -m unittest discover -s simulator -v`.
 - Browser: `cd frontend && npm run e2e` requires local app/Keycloak/database. Inspect mutation targets and use synthetic data.
 - Infrastructure: `terraform -chdir=infrastructure/terraform fmt -check` and `validate`; never confuse validate with deployment. Docker: `docker compose config --quiet`.
 - Run meaningful regression tests for changes; retain failing checks. Do not regenerate lockfiles or major-upgrade dependencies without a concrete need and required approval.

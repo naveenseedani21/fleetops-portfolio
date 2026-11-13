@@ -1,3 +1,4 @@
+import { lifecycleLabel, lifecycleNeedsReview } from './lifecycle';
 import { Component, inject, signal, effect } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
@@ -11,6 +12,8 @@ import { Api, Device, Evidence, Page, errorMessage } from './api';
 })
 export class Detail {
   readonly api = inject(Api);
+  readonly lifecycleLabel = lifecycleLabel;
+  readonly lifecycleNeedsReview = lifecycleNeedsReview;
   private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
   readonly device = signal<Device | null>(null);

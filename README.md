@@ -1,6 +1,6 @@
 # FleetOps
 
-An independently designed educational device inventory and security compliance platform. Spring Boot and Angular simulate Apple fleet workflows using persistent DynamoDB records, OIDC identities, versioned policies, and transactional audit evidence. **This is not Apple MDM and cannot control real devices.**
+A device inventory and security compliance platform. Spring Boot and Angular simulate Apple fleet workflows using persistent DynamoDB records, OIDC identities, versioned policies, and transactional audit evidence. **This is not Apple MDM and cannot control real devices.**
 
 ## Current build
 
@@ -55,11 +55,18 @@ npm start
 
 The Keycloak public issuer must be `http://localhost:8180/realms/fleetops`. Import the supplied realm with `start-dev --import-realm --http-port=8180 --hostname=http://localhost:8180`. Serve the UI on `localhost`, matching the registered redirect URI. `/actuator/health` includes a database-table check.
 
-## Synthetic demo
+## Synthetic fleet workflow
+
+Sign in as an organization administrator and obtain a short-lived access token from that session. See the [simulator setup guide](docs/SIMULATOR.md) for the exact token source, permissions and recovery behavior. Registration and reporting use separate credentials:
 
 ```sh
-export FLEETOPS_CLIENT_SECRET=local-simulator-secret-not-for-production
+printf 'Administrator access token: '
+read -rs FLEETOPS_ADMIN_TOKEN
+printf '\n'
+export FLEETOPS_ADMIN_TOKEN
 python3 simulator/fleetops_sim.py register --count 100 --seed 42
+unset FLEETOPS_ADMIN_TOKEN
+export FLEETOPS_CLIENT_SECRET=local-simulator-secret-not-for-production
 python3 simulator/fleetops_sim.py check-in --count 100
 python3 simulator/fleetops_sim.py check-in --count 10 --scenario noncompliant
 ```
@@ -69,7 +76,7 @@ Create policies through the UI before checking in to observe compliance changes.
 ## Validation
 
 ```sh
-# Docker required for Testcontainers unless TEST_DYNAMODB_ENDPOINT is supplied
+# Java 21, Python 3.11+ and Docker (unless TEST_DYNAMODB_ENDPOINT is supplied)
 AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local mvn -f backend/pom.xml spotless:check verify
 cd frontend
 npm run format:check
@@ -78,13 +85,16 @@ npm test
 npm run build
 npm run e2e # running local backend, Keycloak and frontend required
 cd ..
+python3 -m pip install -e 'simulator[dev]' # use a virtual environment
+ruff check simulator
+python3 -m pytest simulator -q
 python3 -m unittest discover -s simulator -v
 docker compose config --quiet
 ```
 
 ## API and security
 
-API prefix: `/api/v1/organizations/{organization}/`. JWT claims assign tenant membership and role. Every service authorizes before persistence access. Platform roles grant no implicit tenant access. Signed JWTs validate issuer, audience, expiry and signature. Browser login uses authorization code + PKCE; simulator uses client credentials without administrator access.
+API prefix: `/api/v1/organizations/{organization}/`. JWT claims assign tenant membership and role. Every service authorizes before persistence access. Platform roles grant no implicit tenant access. Signed JWTs validate issuer, audience, expiry and signature. Browser login uses authorization code + PKCE; machine reporting uses client credentials without administrator access. Fleet provisioning requires a separate administrator access token; machine registration is denied. Lifecycle and compliance are independent, with conservative handling of legacy lifecycle values.
 
 OpenAPI JSON is available at `/v3/api-docs` with an access token. See [API guide](docs/api/API.md), [threat model](docs/security/THREAT_MODEL.md), [data model](docs/architecture/DATA_MODEL.md), and [operations](docs/OPERATIONS.md).
 

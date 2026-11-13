@@ -35,10 +35,18 @@ public class TenantAccess {
     return identity().getSubject();
   }
 
-  public String ingest(String tenant) {
+  public String ingest(String tenant, String deviceId) {
     String role = memberships().get(tenant);
     if (!"ADMIN".equals(role) && !"INGESTOR".equals(role))
       throw new AccessDeniedException("Telemetry permission denied");
+    if ("INGESTOR".equals(role) && identity().getClaims().containsKey("device_scopes")) {
+      Object claim = identity().getClaims().get("device_scopes");
+      if (!(claim instanceof Map<?, ?> scopes)
+          || !(scopes.get(tenant) instanceof java.util.List<?> ids)
+          || ids.stream().anyMatch(id -> !(id instanceof String))
+          || !ids.contains(deviceId))
+        throw new AccessDeniedException("Device scope permission denied");
+    }
     return identity().getSubject();
   }
 }
