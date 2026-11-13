@@ -8,3 +8,6 @@ AI assistance was used to design the access patterns, implement the backend and 
 - Tests exercise actual DynamoDB transactions through DynamoDB Local. Docker/Testcontainers and production AWS behavior are separate verification claims.
 
 No productivity, coverage, latency or production adoption metrics are claimed.
+
+- Manual browser testing exposed a tenant selector displaying the first sorted option while the API had selected another membership. Switching to the forms value accessor and deterministic membership ordering corrected the mismatch; a regression test verifies selection when option order differs. Tenant authorization remained enforced.
+- The overview denominator is explicitly pass/fail-only; tests ensure UNKNOWN and NOT_APPLICABLE do not inflate compliance.

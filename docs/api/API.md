@@ -13,6 +13,7 @@ All endpoints except `/actuator/health` require `Authorization: Bearer <access-t
 | `.../policies/{id}` | PUT | Admin replace current policy with expected version |
 | `.../policies/{id}/history` | GET | Reader immutable versions |
 | `.../audit-events` | GET | Reader, newest first |
+| `.../dashboard/summary` | GET | Reader, bounded tenant summary (at most 1,000 devices) |
 
 List responses: `{items: [...], nextCursor: string|null}`. `limit` defaults to 25 and is constrained to 1–100. Pass `cursor` unchanged on the next call. Partition comes exclusively from the authorized route; cursors cannot change tenant. Pagination is not a consistent snapshot across separate requests.
 
