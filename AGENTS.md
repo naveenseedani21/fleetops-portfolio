@@ -8,7 +8,7 @@
 - Authorize the tenant before every service read/write. Never trust a route organization without verified membership. Platform roles do not bypass tenant isolation.
 - Preserve optimistic revisions and atomic device/evidence/audit writes. Do not replace Query with Scan or silently drop policies/records at pagination limits.
 - Keep unknown telemetry distinct from passing. Policy versions and historical evidence remain immutable.
-- Preserve current API names and state files. Lifecycle/INGESTOR corrections follow A2/A3; report-ledger/key migrations still require a concrete reviewed proposal.
+- Preserve current API names and state files. Lifecycle/INGESTOR corrections follow A2/A3. The reviewer-readiness request authorizes additive retained report receipts and compatible chronological history reads, without bulk rewriting keys. Future incompatible migrations still require a concrete reviewed proposal.
 - Keep professional product copy and consistent existing styles; implementation limitations belong in documentation. Do not imply physical MDM capability.
 - No secrets/tokens/personal data in logs or commits. Local public realm credentials are development fixtures, never production credentials.
 - Do not provision/delete cloud resources, reset shared data, enable deployment or incur charges without explicit approval. Hosting awaits owner build review.
@@ -21,4 +21,4 @@
 - Run meaningful regression tests for changes; retain failing checks. Do not regenerate lockfiles or major-upgrade dependencies without a concrete need and required approval.
 - Update SPEC_AUDIT, PROGRESS and TASKS with exact results, limitations and next task. Append audit history; do not manufacture approval or completion.
 - User authorized focused GitHub commits/pushes. Preserve unrelated changes and do not reset/clean/stash user work.
-- Known limits: provider-managed memberships, no report ledger/indexed filters, manual reevaluation, bounded 1,000-device overview, incomplete cloud hosting. Check current audit for changes.
+- Known limits: provider-managed memberships, pre-upgrade report-ID coverage, history-prefix read cost, no indexed filters, manual reevaluation, bounded 1,000-device overview, incomplete cloud hosting. Check current audit for changes.

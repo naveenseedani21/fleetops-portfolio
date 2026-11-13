@@ -20,6 +20,7 @@ public class Errors {
 
   @ExceptionHandler({
     MethodArgumentNotValidException.class,
+    org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class,
     org.springframework.http.converter.HttpMessageNotReadableException.class,
     org.springframework.web.method.annotation.HandlerMethodValidationException.class
   })

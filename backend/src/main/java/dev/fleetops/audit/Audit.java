@@ -17,7 +17,7 @@ public record Audit(
   public static Change change(String org, String actor, String action, String target, Instant now) {
     String id = UUID.randomUUID().toString();
     return new Change(
-        "AUDIT#" + now + "#" + id,
+        "AUDIT#" + dev.fleetops.persistence.HistoryKeys.timestamp(now) + "#" + id,
         new Audit(id, org, actor, action, target, now, MDC.get("request.id"), "SUCCESS"),
         1,
         null);

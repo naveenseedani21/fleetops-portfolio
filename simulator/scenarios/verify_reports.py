@@ -65,7 +65,8 @@ def main():
     recovered = machine.request('POST', report_path, recovered_report)
     assert recovered['status'] == 'ACTIVE' and recovered['compliance'] == 'COMPLIANT'
     before = (read(path), read(path + '/evaluations'), read('/audit-events'))
-    denied(machine, report_path, failed_report, 409)
+    assert machine.request('POST', report_path, failed_report) == recovered
+    denied(machine, report_path, {**failed_report, 'reportId': 'unseen-stale'}, 409)
     stale_time = {**recovered_report, 'reportId': 'stale-time', 'sequence': 4,
                   'reportedAt': (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()}
     denied(machine, report_path, stale_time, 400)

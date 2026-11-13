@@ -362,6 +362,13 @@ class FleetIntegrationTest {
                 .with(role(org, "INGESTOR"))
                 .contentType("application/json")
                 .content(oldReport))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.sequence").value(2));
+    mvc.perform(
+            post(path + "/reports")
+                .with(role(org, "INGESTOR"))
+                .contentType("application/json")
+                .content(oldReport.replace("old", "unseen-stale")))
         .andExpect(status().isConflict());
     mvc.perform(get(path).with(role(org, "VIEWER")))
         .andExpect(jsonPath("$.sequence").value(2))
@@ -598,5 +605,246 @@ class FleetIntegrationTest {
         .andExpect(jsonPath("$.lifecycleReviewRequired").value(1));
     mvc.perform(get(base(org) + "/devices").with(role(org, "VIEWER")))
         .andExpect(jsonPath("$.items.length()").value(2));
+  }
+
+  @Test
+  void acceptedReportIdsSurviveInterveningReportsAndRemainScoped() throws Exception {
+    String org = UUID.randomUUID().toString();
+    var device = json.readTree(register(org, "LEDGER-001"));
+    String path = base(org) + "/devices/" + device.get("id").asText();
+    String a =
+        "{\"reportId\":\"report-a\",\"sequence\":1,\"reportedAt\":\"2026-01-01T00:00:00Z\",\"encryption\":false}";
+    String b =
+        "{\"reportId\":\"report-b\",\"sequence\":2,\"reportedAt\":\"2026-01-02T00:00:00Z\",\"encryption\":true}";
+    for (String report : List.of(a, b)) {
+      mvc.perform(
+              post(path + "/reports")
+                  .with(role(org, "INGESTOR"))
+                  .contentType("application/json")
+                  .content(report))
+          .andExpect(status().isOk());
+    }
+    String before =
+        mvc.perform(get(path).with(role(org, "VIEWER")))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    mvc.perform(
+            post(path + "/reports")
+                .with(role(org, "INGESTOR"))
+                .contentType("application/json")
+                .content(a))
+        .andExpect(status().isOk())
+        .andExpect(content().json(before));
+    for (String changed :
+        List.of(
+            a.replace("false", "true"),
+            a.replace("\"sequence\":1", "\"sequence\":3").replace("2026-01-01", "2026-01-03"))) {
+      mvc.perform(
+              post(path + "/reports")
+                  .with(role(org, "INGESTOR"))
+                  .contentType("application/json")
+                  .content(changed))
+          .andExpect(status().isConflict());
+    }
+    mvc.perform(get(path).with(role(org, "VIEWER"))).andExpect(content().json(before));
+    mvc.perform(get(path + "/evaluations").with(role(org, "VIEWER")))
+        .andExpect(jsonPath("$.items.length()").value(2));
+    mvc.perform(get(base(org) + "/audit-events").with(role(org, "VIEWER")))
+        .andExpect(jsonPath("$.items.length()").value(5));
+    var second = json.readTree(register(org, "LEDGER-002"));
+    mvc.perform(
+            post(base(org) + "/devices/" + second.get("id").asText() + "/reports")
+                .with(role(org, "INGESTOR"))
+                .contentType("application/json")
+                .content(a))
+        .andExpect(status().isOk());
+    String other = UUID.randomUUID().toString();
+    var third = json.readTree(register(other, "LEDGER-001"));
+    mvc.perform(
+            post(base(other) + "/devices/" + third.get("id").asText() + "/reports")
+                .with(role(other, "INGESTOR"))
+                .contentType("application/json")
+                .content(a))
+        .andExpect(status().isOk());
+    mvc.perform(
+            post(path + "/reports")
+                .with(role(other, "INGESTOR"))
+                .contentType("application/json")
+                .content(a))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void historyOrdersMixedPrecisionAndEqualInstantsAcrossPages() throws Exception {
+    String org = UUID.randomUUID().toString();
+    var device = json.readTree(register(org, "ORDER-001"));
+    String id = device.get("id").asText();
+    var store = new dev.fleetops.persistence.Store(db, json, TABLE);
+    String auditOrg = UUID.randomUUID().toString();
+    List<String> times =
+        List.of(
+            "2026-01-01T00:00:00Z",
+            "2026-01-01T00:00:00.123Z",
+            "2026-01-01T00:00:00.123456Z",
+            "2026-01-01T00:00:00.123456789Z",
+            "2026-01-01T00:00:01Z",
+            "2026-01-01T00:00:00.123Z");
+    for (int i : List.of(2, 0, 5, 4, 1, 3)) {
+      var instant = java.time.Instant.parse(times.get(i));
+      var audit =
+          new dev.fleetops.audit.Audit(
+              "event-" + i, auditOrg, "fixture", "FIXED_EVENT", id, instant, "fixture", "SUCCESS");
+      store.commit(
+          auditOrg,
+          List.of(
+              new dev.fleetops.persistence.Store.Change(
+                  "AUDIT#" + times.get(i) + "#" + audit.id(), audit, 1, null)));
+      var evidence =
+          new dev.fleetops.devices.DeviceService.Evidence(
+              "event-" + i, org, id, instant, "UNKNOWN", List.of());
+      store.commit(
+          org,
+          List.of(
+              new dev.fleetops.persistence.Store.Change(
+                  "EVAL#" + id + "#" + times.get(i) + "#" + evidence.id(), evidence, 1, null)));
+    }
+    List<String> actual = new ArrayList<>();
+    String cursor = null;
+    do {
+      var request =
+          get(base(org) + "/devices/" + id + "/evaluations")
+              .with(role(org, "VIEWER"))
+              .param("limit", "2");
+      if (cursor != null) request.param("cursor", cursor);
+      var page =
+          json.readTree(
+              mvc.perform(request)
+                  .andExpect(status().isOk())
+                  .andReturn()
+                  .getResponse()
+                  .getContentAsString());
+      page.get("items").forEach(item -> actual.add(item.get("id").asText()));
+      cursor = page.get("nextCursor").isNull() ? null : page.get("nextCursor").asText();
+      assertTrue(actual.size() <= 6, "Pagination repeated entries");
+    } while (cursor != null);
+    assertEquals(List.of("event-4", "event-3", "event-2", "event-5", "event-1", "event-0"), actual);
+    actual.clear();
+    cursor = null;
+    do {
+      var request =
+          get(base(auditOrg) + "/audit-events").with(role(auditOrg, "VIEWER")).param("limit", "2");
+      if (cursor != null) request.param("cursor", cursor);
+      var page =
+          json.readTree(
+              mvc.perform(request)
+                  .andExpect(status().isOk())
+                  .andReturn()
+                  .getResponse()
+                  .getContentAsString());
+      page.get("items").forEach(item -> actual.add(item.get("id").asText()));
+      cursor = page.get("nextCursor").isNull() ? null : page.get("nextCursor").asText();
+      assertTrue(actual.size() <= 6);
+    } while (cursor != null);
+    assertEquals(List.of("event-4", "event-3", "event-2", "event-5", "event-1", "event-0"), actual);
+  }
+
+  private org.hamcrest.Matcher<String> startsWithBearer() {
+    return org.hamcrest.Matchers.startsWith("Bearer");
+  }
+
+  @Test
+  void invalidQueryContractsPreserveStatusAndSafeProblemDetails() throws Exception {
+    String org = UUID.randomUUID().toString();
+    for (String limit : List.of("0", "101", "not-a-number", "999999999999999999999")) {
+      mvc.perform(get(base(org) + "/devices").param("limit", limit).with(role(org, "VIEWER")))
+          .andExpect(status().isBadRequest())
+          .andExpect(content().contentTypeCompatibleWith("application/problem+json"))
+          .andExpect(jsonPath("$.status").value(400))
+          .andExpect(jsonPath("$.detail").isString());
+    }
+    mvc.perform(
+            get(base(org) + "/devices").param("cursor", "not-base64!").with(role(org, "VIEWER")))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.detail").value("Invalid cursor"));
+    mvc.perform(get(base(org) + "/devices"))
+        .andExpect(status().isUnauthorized())
+        .andExpect(header().string("WWW-Authenticate", startsWithBearer()));
+    mvc.perform(get(base(org) + "/devices").with(role("other", "VIEWER")))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.detail").value("Tenant permission denied"));
+  }
+
+  @Test
+  void chronologicalReaderCrossesDatabasePagesAndAcceptsLegacyCursor() throws Exception {
+    String org = UUID.randomUUID().toString();
+    var store = new dev.fleetops.persistence.Store(db, json, TABLE);
+    var changes = new ArrayList<dev.fleetops.persistence.Store.Change>();
+    for (int i = 104; i >= 0; i--) {
+      var time = java.time.Instant.parse("2026-01-01T00:00:00Z").plusSeconds(i);
+      var audit =
+          new dev.fleetops.audit.Audit(
+              "id-" + i, org, "fixture", "ORDER", "fixture", time, "fixture", "SUCCESS");
+      String stamp =
+          i % 2 == 0 ? time.toString() : dev.fleetops.persistence.HistoryKeys.timestamp(time);
+      changes.add(
+          new dev.fleetops.persistence.Store.Change(
+              "AUDIT#" + stamp + "#" + audit.id(), audit, 1, null));
+      if (changes.size() == 25) {
+        store.commit(org, changes);
+        changes.clear();
+      }
+    }
+    if (!changes.isEmpty()) store.commit(org, changes);
+    var first =
+        json.readTree(
+            mvc.perform(get(base(org) + "/audit-events?limit=100").with(role(org, "VIEWER")))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString());
+    var second =
+        json.readTree(
+            mvc.perform(
+                    get(base(org) + "/audit-events")
+                        .param("limit", "100")
+                        .param("cursor", first.get("nextCursor").asText())
+                        .with(role(org, "VIEWER")))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString());
+    List<String> actual = new ArrayList<>();
+    first.get("items").forEach(a -> actual.add(a.get("id").asText()));
+    second.get("items").forEach(a -> actual.add(a.get("id").asText()));
+    assertEquals(
+        java.util.stream.IntStream.iterate(104, i -> i >= 0, i -> i - 1)
+            .mapToObj(i -> "id-" + i)
+            .toList(),
+        actual);
+    assertTrue(second.get("nextCursor").isNull());
+    String legacy =
+        Base64.getUrlEncoder()
+            .withoutPadding()
+            .encodeToString(
+                "AUDIT#2026-01-01T00:00:02Z#id-2"
+                    .getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    mvc.perform(get(base(org) + "/audit-events").param("cursor", legacy).with(role(org, "VIEWER")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.items.length()").value(2))
+        .andExpect(jsonPath("$.items[0].id").value("id-1"))
+        .andExpect(jsonPath("$.items[1].id").value("id-0"));
+    mvc.perform(
+            get(base(org) + "/audit-events")
+                .param(
+                    "cursor",
+                    Base64.getUrlEncoder()
+                        .encodeToString("EVAL#other#2026-01-01T00:00:02Z#id-2".getBytes()))
+                .with(role(org, "VIEWER")))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.detail").value("Invalid history cursor"));
+    mvc.perform(get(base(org) + "/audit-events").with(role("other", "VIEWER")))
+        .andExpect(status().isForbidden());
   }
 }

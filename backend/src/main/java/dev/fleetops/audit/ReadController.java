@@ -27,6 +27,7 @@ public class ReadController {
       @RequestParam(defaultValue = "25") int limit,
       @RequestParam(required = false) String cursor) {
     access.require(org, false);
-    return store.list(org, "AUDIT#", limit, cursor, Audit.class, true);
+    return store.chronological(
+        org, "AUDIT#", limit, cursor, Audit.class, Audit::timestamp, Audit::id);
   }
 }

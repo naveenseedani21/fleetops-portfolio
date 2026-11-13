@@ -22,6 +22,14 @@ public class DeviceService {
       String status,
       List<Engine.Evaluation> policies) {}
 
+  public record ReportReceipt(
+      String organizationId,
+      String deviceId,
+      String reportId,
+      long sequence,
+      String hash,
+      Instant acceptedAt) {}
+
   private final Store store;
   private final TenantAccess access;
   private final Engine engine;
@@ -153,6 +161,12 @@ public class DeviceService {
     Device d = read(org, id);
     assertLive(d);
     String hash = digest(input);
+    String receiptKey = "REPORT#" + id + "#" + input.reportId();
+    var receipt = store.find(org, receiptKey, ReportReceipt.class);
+    if (receipt.isPresent()) {
+      if (!hash.equals(receipt.get().hash())) throw ApiException.conflict();
+      return d;
+    }
     if (input.sequence() == d.sequence()
         && input.reportId().equals(d.lastReportId())
         && hash.equals(d.lastReportHash())) return d;
@@ -186,7 +200,13 @@ public class DeviceService {
         actor,
         "DEVICE_REPORT_ACCEPTED",
         List.of(
-            evidenceChange(evidence), Audit.change(org, actor, "COMPLIANCE_EVALUATED", id, now)));
+            evidenceChange(evidence),
+            Audit.change(org, actor, "COMPLIANCE_EVALUATED", id, now),
+            new Store.Change(
+                receiptKey,
+                new ReportReceipt(org, id, input.reportId(), input.sequence(), hash, now),
+                1,
+                null)));
     metrics.counter("fleetops.reports.accepted").increment();
     return updated;
   }
@@ -231,7 +251,15 @@ public class DeviceService {
 
   private Store.Change evidenceChange(Evidence e) {
     return new Store.Change(
-        "EVAL#" + e.deviceId() + "#" + e.evaluatedAt() + "#" + e.id(), e, 1, null);
+        "EVAL#"
+            + e.deviceId()
+            + "#"
+            + dev.fleetops.persistence.HistoryKeys.timestamp(e.evaluatedAt())
+            + "#"
+            + e.id(),
+        e,
+        1,
+        null);
   }
 
   private void persist(
@@ -251,7 +279,14 @@ public class DeviceService {
   public Store.Page<Evidence> history(String org, String id, int limit, String cursor) {
     access.require(org, false);
     read(org, id);
-    return store.list(org, "EVAL#" + id + "#", limit, cursor, Evidence.class, true);
+    return store.chronological(
+        org,
+        "EVAL#" + id + "#",
+        limit,
+        cursor,
+        Evidence.class,
+        Evidence::evaluatedAt,
+        Evidence::id);
   }
 
   private static void assertRevision(Device d, long revision) {
