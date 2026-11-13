@@ -1,0 +1,12 @@
+target/
+node_modules/
+dist/
+.angular/
+.env
+__pycache__/
+.pytest_cache/
+.terraform/
+*.tfstate*
+*.tfplan
+playwright-report/
+test-results/

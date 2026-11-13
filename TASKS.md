@@ -1,0 +1,17 @@
+# Progress
+- [x] Inspect empty repository, runtimes and instructions.
+- [x] Document architecture, access patterns and sequence.
+- [ ] Compile Java 21 backend and Angular frontend.
+- [ ] Enforce verified JWT membership and roles.
+- [ ] Persist inventory with pagination, duplicate protection and optimistic locking.
+- [ ] Persist audit atomically with mutations.
+- [ ] Connect Angular inventory forms and detail view.
+- [ ] Version policies and evaluate deterministic rules.
+- [ ] Process duplicate and out-of-order telemetry safely.
+- [ ] Add deterministic authenticated Python simulator.
+- [ ] Execute backend, frontend and simulator tests.
+- [ ] Prepare Docker Compose and CI.
+- [ ] Execute Docker and browser end-to-end validation.
+- [ ] Complete organization/member administration, indexed filters and dashboard reporting.
+- [ ] Prepare and validate full Terraform ECS deployment and cost estimate.
+- [ ] Complete portfolio screenshots, walkthrough and final security review.
