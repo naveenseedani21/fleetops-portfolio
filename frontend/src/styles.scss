@@ -550,3 +550,67 @@ meter {
 .metric-grid {
   margin-bottom: 24px;
 }
+
+.editor-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.target-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  border: 1px solid #dfe5ed;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 0 0 24px;
+}
+.target-options legend {
+  padding: 0 8px;
+  font-weight: 600;
+  font-size: 12px;
+}
+.target-options label {
+  margin: 0;
+}
+.rule-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0 16px;
+  padding: 18px;
+  margin-bottom: 16px;
+  background: #f7f9fc;
+  border: 1px solid #e4eaf2;
+  border-radius: 8px;
+}
+.rule-hint {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  margin-bottom: 0;
+}
+.policy-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.policy {
+  gap: 20px;
+}
+.policy-version h3 {
+  margin-top: 16px;
+}
+@media (max-width: 900px) {
+  .rule-editor {
+    grid-template-columns: 1fr;
+  }
+  .rule-editor button {
+    justify-self: start;
+    margin-bottom: 12px;
+  }
+  .policy {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

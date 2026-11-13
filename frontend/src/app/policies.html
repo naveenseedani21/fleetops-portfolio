@@ -2,56 +2,194 @@
 <div class="page-heading">
   <div>
     <h1>Security policies</h1>
-    <p class="muted">Versioned requirements. Evaluate a device after changing a policy.</p>
+    <p class="muted">Define the requirements that keep your fleet compliant.</p>
   </div>
   @if (api.admin) {
-    <button mat-flat-button (click)="edit(null)">+ Create policy</button>
+    <button mat-flat-button (click)="edit(null)" [disabled]="saving()">+ Create policy</button>
   }
 </div>
 @if (error()) {
   <p class="error" role="alert">{{ error() }}</p>
 }
+@if (notice()) {
+  <p class="notice" role="status">{{ notice() }}</p>
+}
 @if (open()) {
-  <section class="panel">
-    <h2>{{ editing() ? 'Edit policy' : 'Create policy' }}</h2>
+  <section class="panel" aria-labelledby="policy-editor-title">
+    <h2 id="policy-editor-title">{{ editing() ? 'Edit policy' : 'Create policy' }}</h2>
     <form [formGroup]="form" (ngSubmit)="save()">
-      <div class="form-grid">
-        <label>Policy name<input formControlName="name" maxlength="100" /></label
-        ><label>Description<input formControlName="description" maxlength="500" /></label
-        ><label
-          >Target type<select formControlName="type">
-            <option>MAC</option>
-            <option>IPHONE</option>
-            <option>IPAD</option>
-          </select></label
-        ><label
-          >Severity<select formControlName="severity">
-            <option>LOW</option>
-            <option>MEDIUM</option>
-            <option>HIGH</option>
-            <option>CRITICAL</option>
-          </select></label
-        ><label
-          >Rule<select formControlName="rule">
-            <option>ENCRYPTION</option>
-            <option>SCREEN_LOCK</option>
-            <option>FIREWALL</option>
-            <option>MIN_OS</option>
-            <option>MAX_AGE_HOURS</option>
-            <option>ALLOWED_TYPE</option>
-          </select></label
-        ><label>Required value<input formControlName="value" aria-describedby="rule-help" /></label>
-      </div>
-      <p id="rule-help" class="muted">
-        Boolean rules: true or false. OS: numeric version. Age: positive hours. Types:
-        MAC,IPHONE,IPAD.
-      </p>
-      <label class="checkbox"><input type="checkbox" formControlName="enabled" />Enabled</label>
-      <div class="actions">
-        <button mat-flat-button [disabled]="busy() || form.invalid">Save policy version</button
-        ><button mat-button type="button" (click)="open.set(false)">Cancel</button>
-      </div>
+      <fieldset class="editor-fields" [disabled]="saving()">
+        <div class="form-grid">
+          <label>Policy name<input formControlName="name" maxlength="100" required /></label>
+          <label>Description<input formControlName="description" maxlength="500" /></label>
+          <label
+            >Severity<select formControlName="severity">
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+              <option value="CRITICAL">Critical</option>
+            </select></label
+          >
+        </div>
+        <fieldset class="target-options" formGroupName="targets">
+          <legend>Applies to</legend>
+          @for (type of deviceTypes; track type.value) {
+            <label class="checkbox"
+              ><input type="checkbox" [formControlName]="type.value" />{{ type.label }}</label
+            >
+          }
+        </fieldset>
+        @if (form.controls.targets.invalid) {
+          <p class="error">Select at least one device type.</p>
+        }
+        <div class="section-heading">
+          <h3>Requirements</h3>
+          <button
+            mat-stroked-button
+            type="button"
+            (click)="addRule()"
+            [disabled]="rules.length >= ruleOptions.length"
+          >
+            + Add requirement
+          </button>
+        </div>
+        <div formArrayName="rules">
+          @for (row of rules.controls; track row; let i = $index) {
+            <div class="rule-editor" [formGroupName]="i">
+              <label
+                >Requirement {{ i + 1
+                }}<select formControlName="type" (change)="changeRule(i)">
+                  @for (option of ruleOptions; track option.type) {
+                    <option [value]="option.type">{{ option.label }}</option>
+                  }
+                </select></label
+              >
+              <label [attr.for]="'rule-value-' + i"
+                >{{
+                  row.controls.type.value === 'MAX_AGE_HOURS'
+                    ? 'Maximum age (hours)'
+                    : row.controls.type.value === 'MIN_OS'
+                      ? 'Minimum version'
+                      : 'Required value'
+                }}
+                @if (['ENCRYPTION', 'SCREEN_LOCK', 'FIREWALL'].includes(row.controls.type.value)) {
+                  <select formControlName="value" [id]="'rule-value-' + i">
+                    <option value="true">Enabled</option>
+                    <option value="false">Disabled</option>
+                  </select>
+                } @else {
+                  <input
+                    [id]="'rule-value-' + i"
+                    formControlName="value"
+                    [attr.aria-describedby]="'rule-help-' + i"
+                    [attr.inputmode]="
+                      row.controls.type.value === 'MAX_AGE_HOURS' ? 'numeric' : 'text'
+                    "
+                    maxlength="100"
+                  />
+                }
+              </label>
+              <button
+                mat-button
+                type="button"
+                (click)="removeRule(i)"
+                [disabled]="rules.length === 1"
+                [attr.aria-label]="'Remove requirement ' + (i + 1)"
+              >
+                Remove
+              </button>
+              <p class="muted rule-hint" [id]="'rule-help-' + i">
+                @switch (row.controls.type.value) {
+                  @case ('MIN_OS') {
+                    Use a numeric version, such as 15.2.1.
+                  }
+                  @case ('MAX_AGE_HOURS') {
+                    Enter a whole number from 1 to 99,999.
+                  }
+                  @case ('ALLOWED_TYPE') {
+                    Use MAC, IPHONE, or IPAD, separated by commas without spaces.
+                  }
+                  @case ('FIREWALL') {
+                    Firewall requirements apply to Mac devices.
+                  }
+                  @default {
+                    Devices must report the selected setting.
+                  }
+                }
+              </p>
+              @if (row.invalid && row.touched) {
+                <p class="error rule-hint">Enter a valid value for this requirement.</p>
+              }
+            </div>
+          }
+        </div>
+        @if (rules.hasError('duplicate')) {
+          <p class="error">Use each requirement once per policy.</p>
+        }
+        <label class="checkbox"
+          ><input type="checkbox" formControlName="enabled" />Policy enabled</label
+        >
+        <p class="muted">
+          Changes create a new version. Evaluate devices to update their compliance results.
+        </p>
+        <div class="actions">
+          <button mat-flat-button type="submit" [disabled]="saving() || form.invalid">
+            {{ saving() ? 'Saving…' : 'Save policy version' }}</button><button
+            mat-button
+            type="button"
+            (click)="open.set(false)"
+          >
+            Cancel
+          </button>
+        </div>
+      </fieldset>
     </form>
+  </section>
+}
+@if (historyPolicy(); as selected) {
+  <section class="panel" aria-labelledby="history-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">VERSION HISTORY</p>
+        <h2 id="history-title">{{ selected.name }}</h2>
+      </div>
+      <button mat-button (click)="closeHistory()">Close history</button>
+    </div>
+    @if (historyError()) {
+      <p role="alert" class="error">{{ historyError() }}</p>
+    }
+    @for (version of versions(); track version.version) {
+      <details class="policy-version">
+        <summary>
+          Version {{ version.version }} · {{ version.updatedAt | date: 'medium' }} ·
+          {{ version.enabled ? 'Enabled' : 'Disabled' }}
+        </summary>
+        <h3>{{ version.name }}</h3>
+        <p>{{ version.description }}</p>
+        <p class="muted">{{ targetsLabel(version.targetTypes) }} · {{ version.severity }}</p>
+        @for (rule of version.rules; track rule.type) {
+          <p>
+            {{ ruleLabel(rule.type) }} <strong>{{ valueLabel(rule.type, rule.value) }}</strong>
+          </p>
+        }
+      </details>
+    } @empty {
+      @if (!historyBusy() && !historyError()) {
+        <p>No versions recorded.</p>
+      }
+    }
+    @if (historyBusy()) {
+      <p role="status">Loading policy history…</p>
+    }
+    @if (historyNext()) {
+      <button
+        mat-stroked-button
+        [disabled]="historyBusy()"
+        (click)="showHistory(selected, historyNext()!)"
+      >
+        Load older versions
+      </button>
+    }
   </section>
 }
 <section class="panel">
@@ -60,7 +198,7 @@
     <button mat-button (click)="load()" [disabled]="busy()">Refresh</button>
   </div>
   @if (busy()) {
-    <p role="status">Loading…</p>
+    <p role="status">Loading policies…</p>
   }
   @for (p of policies(); track p.id) {
     <article class="policy">
@@ -70,24 +208,48 @@
         </h3>
         <p>{{ p.description }}</p>
         <p class="muted">
-          {{ p.targetTypes.join(', ') }} · {{ p.severity }} ·
+          {{ targetsLabel(p.targetTypes) }} · {{ p.severity }} ·
           {{ p.enabled ? 'Enabled' : 'Disabled' }}
         </p>
         @for (r of p.rules; track r.type) {
           <p>
-            {{ r.type }} <strong>{{ r.value }}</strong>
+            {{ ruleLabel(r.type) }} <strong>{{ valueLabel(r.type, r.value) }}</strong>
           </p>
         }
       </div>
-      @if (api.admin && p.rules.length === 1 && p.targetTypes.length === 1) {
-        <button mat-stroked-button (click)="edit(p)">Edit</button>
-      }
+      <div class="policy-actions">
+        <button
+          mat-button
+          (click)="showHistory(p)"
+          [attr.aria-label]="'View history for ' + p.name"
+        >
+          History
+        </button>
+        @if (api.admin) {
+          <button
+            mat-stroked-button
+            (click)="edit(p)"
+            [disabled]="saving()"
+            [attr.aria-label]="'Edit ' + p.name"
+          >
+            Edit
+          </button>
+        }
+      </div>
     </article>
   } @empty {
-    <div class="empty">
-      <h3>No policies yet</h3>
-      <p>Create a baseline to begin evaluating device posture.</p>
-    </div>
+    @if (!busy() && !error()) {
+      <div class="empty">
+        <h3>No policies yet</h3>
+        <p>
+          {{
+            api.admin
+              ? 'Create a baseline to begin evaluating device posture.'
+              : 'Policies will appear here when an administrator creates them.'
+          }}
+        </p>
+      </div>
+    }
   }
   <div class="pagination">
     <span>{{ policies().length }} policies on this page</span

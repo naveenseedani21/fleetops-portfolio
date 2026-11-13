@@ -6,7 +6,7 @@ An independently designed educational device inventory and security compliance p
 
 A working vertical slice, under active development. Inventory registration/detail/update/retirement, tenant-scoped reads, cursor pagination, six compliance rule types, immutable policy versions, authenticated telemetry, replay/stale-write protection and audit history are implemented. Angular provides inventory, detail, policy, audit and a bounded live overview. The Python simulator generates synthetic fleets.
 
-Not complete: organization/member administration, platform administration, indexed search/filtering, materialized large-fleet reporting and historical trends, automatic policy-change re-evaluation, persistent authorization-denial audit, full Terraform application hosting, and comprehensive accessibility review. Policy UI edits one rule/target per policy; compound policies are supported by the API. No cloud deployment has occurred.
+Not complete: organization/member administration, platform administration, indexed search/filtering, materialized large-fleet reporting and historical trends, automatic policy-change re-evaluation, persistent authorization-denial audit, full Terraform application hosting, and comprehensive accessibility review. Policy UI supports multiple requirements and target types, plus paginated immutable version history. No cloud deployment has occurred.
 
 ![Actual compliance evidence](docs/screenshots/compliance.jpg)
 

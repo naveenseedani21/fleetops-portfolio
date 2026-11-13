@@ -27,8 +27,13 @@ test('administrator registers, evaluates, ingests and inspects real compliance e
  await page.getByRole('link',{name:'Security policies'}).click();
  await page.getByRole('button',{name:'+ Create policy'}).click();
  await page.getByLabel('Policy name',{exact:true}).fill('Browser encryption '+unique);
+ await page.getByRole('checkbox',{name:'iPad',exact:true}).check();
+ await page.getByRole('button',{name:'+ Add requirement',exact:true}).click();
  await page.getByRole('button',{name:'Save policy version'}).click();
  await expect(page.getByRole('heading',{name:'Browser encryption '+unique})).toBeVisible();
+ await page.getByRole('button',{name:'View history for Browser encryption '+unique,exact:true}).click();
+ await expect(page.getByText(/Version 1 ·/)).toBeVisible();
+ await page.getByRole('button',{name:'Close history',exact:true}).click();
  await page.goto('/devices/'+device.id);
  await page.getByRole('button',{name:'Evaluate policies'}).click();
  await expect(page.getByText('Change saved.', {exact:true})).toBeVisible();

@@ -24,8 +24,8 @@
 - [x] Atomic device/evaluation/audit persistence.
 - [x] Exact-last-report replay and stale/out-of-order protection.
 - [x] Paced authenticated Python simulator with deterministic inventory and pending-report recovery.
-- [x] UI policy creation/editing for one rule/target; compound policies through API.
-- [ ] Compound policy form editor and history UI.
+- [x] UI policy creation/editing across multiple rules and device types.
+- [x] Compound policy form editor, validated values and paginated version history UI.
 - [ ] Automatic policy-change fleet re-evaluation and inactivity scheduling.
 - [ ] Robust registration recovery after an ambiguous network timeout.
 

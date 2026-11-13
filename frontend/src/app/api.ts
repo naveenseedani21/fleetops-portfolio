@@ -32,6 +32,7 @@ export interface Policy {
   severity: string;
   enabled: boolean;
   version: number;
+  updatedAt?: string;
 }
 export interface Audit {
   id: string;
