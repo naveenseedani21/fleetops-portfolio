@@ -41,3 +41,24 @@ The frontend on4200 has the new lifecycle presentation, visually inspected and c
 Next unchecked task: §12.3 malformed limit/cursor and auth Problem Details contract tests; reproduce first and preserve valid APIs. Then minimum-OS browser recovery/audit journey and CI startup diagnosis. Report ledger/history key redesign needs a concrete preservation/retention proposal before implementation. Hosting waits for build/cost approval. Source of truth remains outputs/fleetops/.git; regular focused commits/pushes are authorized.
 
 Implementation checkpoint: c5618fc (`fix: enforce report-only machines and independent device lifecycle`). Editable simulator installation with pinned dev extras and the installed `fleetops-sim --help` entry point also passed. The following documentation checkpoint records results and screenshot evidence separately.
+
+## Reviewer-readiness current checkpoint (supersedes earlier next-task lists)
+
+Preserve A1–A3. Integrity commit ee41c44 is pushed: scoped retained receipts, two-JVM restart coverage, compatible mixed-precision chronological reads, API error contracts;34 backend +37 Python +original4 pass. New receipts have no TTL; no historical backfill, key rewrite or data reset. History compatibility Query has O(history-length) read cost per API page.
+
+Owner restarted verified native jar:8080 PID65658, old18081 gone, Keycloak57293 and DynamoDB57032 preserved. Real administrator registration and machine failure/recovery visible in the native UI; machine negative API checks passed. Native proof screenshots captured.
+
+Historical CI startup issue resolved; private account details omitted from this public copy.
+
+Docker installed by owner; image builds and isolated Compose startup worked after moving only fixture bind mounts out of the synced checkout that returned Input/output error. Existing application untouched. Local Chromium executable installed, but launch still denied by macOS bootstrap/Mach-port sandbox; host script scripts/run-reviewer-browser-host.sh prepared for both native and isolated stacks. Await actual owner run/results before claiming local full acceptance.
+
+Frontend concepts prepared separately for owner choice, not applied. README/audit/demo script being packaged. Next: inspect new GitHub browser results, fix any confirmed test defects, capture/copy genuine passing-run screenshots, record host acceptance (or exact blocker), and commit documentation/evidence. Hosting remains deferred.
+
+
+## Reviewer evidence packaged — latest checkpoint
+
+A1–A3 preserved. Backend integrity/history/error changes are complete and verified (34 tests). Actual GitHub run43393690562 on7670c5b passed all five jobs. Host acceptance passed both native and isolated Docker, then visual review caught a production stylesheet/CSP incompatibility missed by the initial functional assertions. Commit0c62ed8 fixes build output without weakening CSP or changing product styling; added layout and loaded-viewer screenshot checks.
+
+Final real host run `work/browser-20261113T083527Z`: native2/2 in7.9s; Docker2/2 in8.4s. All six PNGs inspected and copied unchanged, safe console results committed, raw token-bearing traces ignored. Current native PID67914 on8080 uses the same verified JAR;18081 is free, native Keycloak/DynamoDB preserved. Docker uses separate14200/18080/18180/18000 ports and persistent project volumes. No reset/deletion/hosting. README, DEMO, VALIDATION and audit contain exact setup, results, screenshots and limits.
+
+Next: verify the documentation/CSS commit's GitHub run; then owner chooses Precision, Operations or Studio before any UI redesign. Hosting stays deferred. Do not resume unrelated feature work or revisit approved A1–A3 technology/auth/lifecycle decisions. Historical blockers above are superseded by SPEC_AUDIT E21–E25.

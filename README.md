@@ -4,11 +4,13 @@ A device inventory and security compliance platform. Spring Boot and Angular sim
 
 ## Current build
 
-A working vertical slice, under active development. Inventory registration/detail/update/retirement, tenant-scoped reads, cursor pagination, six compliance rule types, immutable policy versions, authenticated telemetry, replay/stale-write protection and audit history are implemented. Angular provides inventory, detail, policy, audit and a bounded live overview. The Python simulator generates synthetic fleets.
+A reviewer-focused engineering demonstration of inventory, authorization and compliance workflows. Inventory registration/detail/update/retirement, tenant-scoped reads, cursor pagination, six compliance rule types, immutable policy versions, authenticated telemetry, replay/stale-write protection and audit history are implemented. Angular provides inventory, detail, policy, audit and a bounded live overview. The Python simulator generates synthetic fleets.
 
 Not complete: organization/member administration, platform administration, indexed search/filtering, materialized large-fleet reporting and historical trends, automatic policy-change re-evaluation, persistent authorization-denial audit, full Terraform application hosting, and comprehensive accessibility review. Policy UI supports multiple requirements and target types, plus paginated immutable version history. No cloud deployment has occurred.
 
-![Actual compliance evidence](docs/screenshots/compliance.jpg)
+Start with the [five-minute reviewer walkthrough](docs/DEMO.md), [validation record](docs/VALIDATION.md), and [specification audit](docs/SPEC_AUDIT.md). A1–A3 decisions remain preserved; hosting is deferred.
+
+![Actual recovery: active lifecycle, compliant posture, retained failure evidence](docs/screenshots/reviewer-native-recovery.png)
 
 ## Stack
 
@@ -38,7 +40,7 @@ docker compose up --build
 
 Open http://localhost:4200 after Keycloak and the backend start. Sign in with `admin` / `local-admin-only` or `viewer` / `local-viewer-only`. Admin belongs to `demo` and `lab`; viewer only to `demo`. The simulator service account has only `INGESTOR` in `demo`.
 
-The Docker startup path is supplied but must be validated on a Docker-capable machine; see [validation evidence](docs/VALIDATION.md) for what was actually executed. DynamoDB and Keycloak use named persistent volumes. Do not expose this Compose stack publicly.
+Both Docker images have built locally and on GitHub, and the isolated local Compose stack has started. See [validation evidence](docs/VALIDATION.md) for the separate browser acceptance and CI status. For an existing local installation, use the [isolated reviewer setup](docs/DEMO.md) with separate ports and volumes. DynamoDB and Keycloak use named persistent volumes. Do not expose this Compose stack publicly.
 
 For native development, run DynamoDB Local and Keycloak using the same realm in `infrastructure/keycloak/`, initialize the table with `scripts/init-db.sh` (AWS CLI required), then:
 
@@ -74,6 +76,8 @@ python3 simulator/fleetops_sim.py check-in --count 10 --scenario noncompliant
 Create policies through the UI before checking in to observe compliance changes. New devices are `UNKNOWN`; evaluation without applicable policies is `NOT_APPLICABLE`. An inactivity scenario backdates reports and is accepted only for a device without a newer check-in; use a fresh fleet/state file. Reports cannot rewind existing device state.
 
 ## Validation
+
+Backend:34 passing tests, including two-process restart idempotency and mixed-precision history pagination. Frontend:17 tests. Simulator:37 pytest cases plus the retained4 unittest cases. [GitHub run43393690562](https://github.com/naveenseedani21/fleetops/actions/runs/43393690562) passed all five jobs, including the real Docker browser workflow. Native and isolated Docker browser suites also passed from the host. See the [validation record](docs/VALIDATION.md) for dated results, the production stylesheet correction, screenshot provenance and remaining limitations; [current CI](https://github.com/naveenseedani21/fleetops/actions/workflows/ci.yml) shows subsequent commits.
 
 ```sh
 # Java 21, Python 3.11+ and Docker (unless TEST_DYNAMODB_ENDPOINT is supplied)

@@ -5,7 +5,7 @@
 - [x] Define architecture and DynamoDB access patterns before persistence.
 - [x] Start native backend, frontend, Keycloak and DynamoDB Local.
 - [x] Configure database-aware health, structured logs and request correlation.
-- [ ] Verify complete Docker Compose startup and image builds (Docker unavailable locally).
+- [x] Verify isolated Docker Compose startup and image builds; existing native data preserved (SPEC_AUDIT E19/E21).
 
 ## Inventory and tenant security
 - [x] Device registration, details, metadata/assignment edits and retirement.
@@ -45,8 +45,10 @@
 - [x] Java, frontend and simulator automated tests; see VALIDATION.md for exact results.
 - [x] Add Playwright tests and a Docker-based CI browser job.
 - [x] Validate workflow syntax with actionlint.
-- [ ] Resolve GitHub Actions startup_failure; no CI job has executed successfully yet.
-- [ ] Execute complete Playwright suite (local browser launch blocked by sandbox).
+- [x] Diagnose GitHub startup block from the account billing annotation; actual jobs now execute (SPEC_AUDIT E13/E20).
+- [x] Verify all five intended jobs execute and pass: run43393690562; track subsequent revisions in CI.
+- [x] Execute real native and isolated Docker Playwright workflows from the host: two tests pass on each (E23).
+- [x] Verify the Docker production stylesheet correction, loaded screenshots and layout assertions on both stacks (E25).
 - [ ] Full Java/container dependency vulnerability scanning and resolution of npm moderate tooling advisories.
 - [x] Terraform foundation validates; no resources provisioned.
 - [x] Security model, API guide, operations, architecture decisions and interview walkthrough.
@@ -64,10 +66,10 @@ The initial application slices are implemented; the full eight-phase master spec
 - [x] Add structured threat register, retention notes and25 grounded interview Q&A.
 - [x] Record explicit A1/A2/A3 approvals and preserve their boundaries.
 - [x] Correct lifecycle/compliance mixing; conservative legacy reads/UI review flags, independent dashboard counts and regression tests. Existing ambiguous stored values are preserved.
-- [ ] Define durable report-ID/history/retention behavior; current protection covers only the latest ID.
-- [ ] Next independent task: malformed query/authentication Problem Details contract coverage (§12.3).
-- [ ] Complete minimum-OS recovery/audit Playwright scenario and run full acceptance on a Docker-capable environment.
-- [ ] Stop temporary audit verification process on18081 from the host; automated process-control permission was denied.
+- [x] Persist scoped report receipts atomically; verify A/B/A and changed-ID conflicts across a backend restart; document retention and pre-upgrade limits.
+- [x] Correct mixed-precision audit/evidence ordering and verify fixed-dataset pagination across 105 rows; add malformed query/authentication error contracts.
+- [x] Complete minimum-OS recovery/audit Playwright scenario against real native and isolated Docker services (E23).
+- [x] Owner stopped old verification process18081 with guarded host restart; confirmed port free.
 
 ## Approved remediation checkpoint
 - [x] A1 stdlib approved deviation: compatibility tests before behavior edits, pytest/Ruff plus original unittest in CI, timeout/retry/auth/redirect tests and documented limits.
@@ -75,4 +77,11 @@ The initial application slices are implemented; the full eight-phase master spec
 - [x] Real Python CLI provisioning→machine reporting→compliance failure/recovery over authenticated HTTP and local DynamoDB; duplicate/stale requests preserve device/evidence/audit.
 - [x] Verify29 backend,37 Python (including original4),17 frontend tests; formatting/lint/build/actionlint passed. See SPEC_AUDIT E8–E12.
 - [x] Visually inspect legacy lifecycle inventory/detail rendering; screenshot saved.
-- [ ] Restart main API8080 from host to load newly verified backend; temporary18081 shutdown remains process-permission blocked.
+- [x] Owner restarted main API8080; PID65658 loads verified reviewer jar, health UP, Keycloak/DynamoDB original processes retained.
+
+## Reviewer package
+- [x] Real native and isolated Docker acceptance, including MIN_OS failure/recovery, tenant/viewer/machine denials and retirement invariance.
+- [x] Preserve receipt/history fixes and A1–A3; actual native restart replay verified.
+- [x] Five-minute demo script, verified setup/limitations and genuine final screenshots.
+- [ ] Owner selects a frontend direction before implementation.
+- [ ] Hosting remains deferred until the owner approves the build.

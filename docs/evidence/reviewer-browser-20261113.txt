@@ -1,0 +1,32 @@
+FleetOps real browser acceptance — 2026-11-13
+Application/test commit: 0c62ed8
+Command: bash scripts/run-reviewer-browser-host.sh
+Evidence directory: work/browser-20261113T083527Z
+No mocked API, identity provider or database.
+
+NATIVE
+
+Running 2 tests using 1 worker
+
+  ✓  1 e2e/fleet.spec.ts:48:1 › administrator provisioning, restricted machine reports, visible failure and recovery (3.9s)
+  ✓  2 e2e/fleet.spec.ts:161:1 › viewer cannot provision or change policies and cannot cross the tenant boundary (1.6s)
+
+  2 passed (7.9s)
+
+To open last HTML report run:
+
+  npx playwright show-report
+
+
+DOCKER
+
+Running 2 tests using 1 worker
+
+  ✓  1 e2e/fleet.spec.ts:48:1 › administrator provisioning, restricted machine reports, visible failure and recovery (5.7s)
+  ✓  2 e2e/fleet.spec.ts:161:1 › viewer cannot provision or change policies and cannot cross the tenant boundary (1.0s)
+
+  2 passed (8.4s)
+
+To open last HTML report run:
+
+  npx playwright show-report
