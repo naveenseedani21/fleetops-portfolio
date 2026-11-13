@@ -21,3 +21,12 @@ The overview uses real tenant-scoped API data. It caps fleet aggregation at 1,00
 ## 2026-11-13 controlled audit batch
 
 Fresh baseline:16 backend tests,11 frontend tests, frontend lint/format/build,4 simulator tests pass. After compatible health and regression changes:24 backend tests pass (zero failures/errors/skips), with successful jar packaging and isolated live HTTP probe checks on18081. Terraform foundation formatting/validation and actionlint pass. See SPEC_AUDIT.md E1–E7 for commands, corrected intermediate failures, remote CI startup failure, temporary-process cleanup restriction and exact limitations. No new full Playwright, Docker or cloud deployment result is claimed.
+
+## Approved A1–A3 remediation — 2026-11-13
+
+- Backend:29 tests, zero failures/errors/skips; Java21 Spotless and Maven packaging passed against loopback DynamoDB Local. Repository sources match the verified build copy byte-for-byte.
+- Real simulator workflow: administrator-only CLI provisioning, machine-only reporting, signed JWT HTTP validation and DynamoDB persistence passed. Duplicate/altered/stale reports leave persisted device/evaluation/audit state unchanged; failure→recovery preserves active lifecycle.
+- Simulator:37 pytest tests (including original4), standalone4 unittest tests and Ruff pass. Compatibility tests passed before changing behavior. Pytest/Ruff integrated into CI without replacing unittest.
+- Frontend:17 tests/6 files, formatting, lint and production build pass. Live inventory/detail visually checked, including legacy Needs review guidance and separate compliance badge; screenshot lifecycle-review.jpg. Backend8080 still requires host restart for new server behavior.
+- actionlint and git diff checks pass. Last checked GitHub run43378198611 still startup_failure; no successful remote CI claimed. Docker/complete Playwright/cloud deployment remain unverified.
+- No data reset, bulk migration, provider replacement or cloud action. See SPEC_AUDIT.md E8–E12 for scope, intermediate failures/fixes and unresolved limitations.

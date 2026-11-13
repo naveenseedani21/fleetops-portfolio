@@ -62,9 +62,17 @@ The initial application slices are implemented; the full eight-phase master spec
 - [x] Expand minimum-OS recovery, tenant/machine denials, retirement, transaction rollback and signed nbf regression coverage (24 backend tests pass).
 - [x] Add AGENTS, PROGRESS, TESTING and endpoint permissions; preserve existing API/ADR documents with indexes.
 - [x] Add structured threat register, retention notes and25 grounded interview Q&A.
-- [ ] Resolve A1 simulator stack, A2 machine provisioning and A3 lifecycle decisions before material changes.
-- [ ] Correct lifecycle/compliance mixing after A3 approval; existing NONCOMPLIANT lifecycle values remain.
+- [x] Record explicit A1/A2/A3 approvals and preserve their boundaries.
+- [x] Correct lifecycle/compliance mixing; conservative legacy reads/UI review flags, independent dashboard counts and regression tests. Existing ambiguous stored values are preserved.
 - [ ] Define durable report-ID/history/retention behavior; current protection covers only the latest ID.
 - [ ] Next independent task: malformed query/authentication Problem Details contract coverage (§12.3).
 - [ ] Complete minimum-OS recovery/audit Playwright scenario and run full acceptance on a Docker-capable environment.
 - [ ] Stop temporary audit verification process on18081 from the host; automated process-control permission was denied.
+
+## Approved remediation checkpoint
+- [x] A1 stdlib approved deviation: compatibility tests before behavior edits, pytest/Ruff plus original unittest in CI, timeout/retry/auth/redirect tests and documented limits.
+- [x] A2 admin-only provisioning, report-only scoped machines, unknown-device rejection and persisted denial tests.
+- [x] Real Python CLI provisioning→machine reporting→compliance failure/recovery over authenticated HTTP and local DynamoDB; duplicate/stale requests preserve device/evidence/audit.
+- [x] Verify29 backend,37 Python (including original4),17 frontend tests; formatting/lint/build/actionlint passed. See SPEC_AUDIT E8–E12.
+- [x] Visually inspect legacy lifecycle inventory/detail rendering; screenshot saved.
+- [ ] Restart main API8080 from host to load newly verified backend; temporary18081 shutdown remains process-permission blocked.
