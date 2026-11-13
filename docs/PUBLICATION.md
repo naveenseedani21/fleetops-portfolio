@@ -22,3 +22,7 @@ Two preview unit tests verify provider-free boot/disclosure and independent life
 ## $0 publication
 
 Public GitHub uses standard Linux runners; no paid deployment or artifact service is enabled. Sites uses existing included Pro hosting. No AWS resources, domains, databases, paid upgrades or cloud backend are provisioned. A recorded video is not claimed available; genuine screenshots and executable local instructions are included.
+
+## Sites publication status
+
+The Site was registered privately, and the isolated Angular build was prepared and browser-verified. Publication is **not complete**: the execution policy rejected the helper stdin step required to sync source, including after repository/network permissions were granted and the helper was restarted. No saved/deployed version is claimed and the expected URL is not presented as live. Resume the existing Site identity rather than creating a duplicate. The actual public repository and local preview build are available independently.

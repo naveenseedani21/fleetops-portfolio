@@ -1,6 +1,6 @@
 # FleetOps
 
-[Explore the frontend preview](https://fleetops-operations-preview.naveenseedani.chatgpt.site) · [User stories and screenshots](docs/USER_STORIES.md) · [Run locally](docs/DEMO.md) · [CI](https://github.com/naveenseedani21/fleetops-portfolio/actions)
+[Frontend preview build](docs/PUBLICATION.md) · [User stories and screenshots](docs/USER_STORIES.md) · [Run locally](docs/DEMO.md) · [CI](https://github.com/naveenseedani21/fleetops-portfolio/actions)
 
 **Two distinct experiences:** the hosted Angular preview uses labeled synthetic, in-memory UI states. The full Docker application uses real Spring Boot, Keycloak and DynamoDB Local. No backend is hosted on Sites and no AWS infrastructure has been deployed.
 
@@ -108,4 +108,4 @@ OpenAPI JSON is available at `/v3/api-docs` with an access token. See [API guide
 
 ## Hosting
 
-The budget is $0. Sites hosts only the separately built frontend proof of concept under the existing Pro entitlement. The real application runs locally through Docker. Terraform remains an unapplied foundation; no cloud backend is deployed. See [preview isolation](docs/PUBLICATION.md) and [local demo](docs/DEMO.md).
+The budget is $0. The separately built frontend proof of concept is ready for Sites under the existing Pro entitlement, but publication is currently blocked by the execution policy; no live preview URL is claimed. The real application runs locally through Docker. Terraform remains an unapplied foundation; no cloud backend is deployed. See [preview isolation](docs/PUBLICATION.md) and [local demo](docs/DEMO.md).
