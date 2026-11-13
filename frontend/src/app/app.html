@@ -6,7 +6,6 @@
     <p class="eyebrow">FLEETOPS / DEVICE OPERATIONS</p>
     <h1>A clear view of your fleet.</h1>
     <p>Inventory, security policies, and compliance evidence in one workspace.</p>
-    <p class="muted">Educational device simulation. No actual device management commands.</p>
     @if (auth.error()) {
       <p class="error" role="alert">{{ auth.error() }}</p>
     }
@@ -21,15 +20,11 @@
       <a routerLink="/devices" class="brand"><span class="brand-mark">F</span> FleetOps</a>
       <p class="nav-label">WORKSPACE</p>
       <nav aria-label="Main navigation">
+        <a routerLink="/overview" routerLinkActive="active">◫ <span>Overview</span></a>
         <a routerLink="/devices" routerLinkActive="active">▦ <span>Device inventory</span></a
         ><a routerLink="/policies" routerLinkActive="active">◇ <span>Security policies</span></a
         ><a routerLink="/audit" routerLinkActive="active">≡ <span>Audit activity</span></a>
       </nav>
-      <div class="sidebar-foot">
-        <span class="status-dot"></span> Educational simulation<br /><small
-          >Independent portfolio project</small
-        >
-      </div>
     </aside>
     <div class="workspace">
       <header>
@@ -48,7 +43,7 @@
           </select></label
         >
         <div class="profile">
-          <span>{{ api.memberships()[api.organization()] }}</span><button
+          <span class="profile-role">{{ api.memberships()[api.organization()] }}</span><button
             mat-button
             aria-label="Sign out"
             (click)="auth.logout()"

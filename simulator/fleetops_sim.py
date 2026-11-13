@@ -16,8 +16,8 @@ def fleet(count: int, seed: int):
     rng = random.Random(seed)
     for index in range(count):
         kind = rng.choice(["MAC", "IPHONE", "IPAD"])
-        os_name, model, version = {"MAC": ("macOS", "Synthetic MacBook Pro", "15.10"), "IPHONE": ("iOS", "Synthetic iPhone", "18.3"), "IPAD": ("iPadOS", "Synthetic iPad", "18.3")}[kind]
-        yield {"name": f"Demo {kind.title()} {index + 1:03}", "type": kind, "model": model, "os": os_name, "osVersion": version, "serial": f"SYN-{seed}-{index:05}", "employee": f"Synthetic Employee {index + 1:03}"}
+        os_name, model, version = {"MAC": ("macOS", "MacBook Pro", "15.10"), "IPHONE": ("iOS", "iPhone", "18.3"), "IPAD": ("iPadOS", "iPad", "18.3")}[kind]
+        yield {"name": f"{model} {index + 1:03}", "type": kind, "model": model, "os": os_name, "osVersion": version, "serial": f"SYN-{seed}-{index:05}", "employee": f"Employee {index + 1:03}"}
 
 
 def telemetry(device, sequence, scenario):

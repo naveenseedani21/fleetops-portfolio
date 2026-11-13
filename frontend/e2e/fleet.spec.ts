@@ -14,9 +14,9 @@ test('administrator registers, evaluates, ingests and inspects real compliance e
  await page.getByLabel('Device name',{exact:true}).fill('Browser Test '+unique);
  await page.getByLabel('Model',{exact:true}).fill('Synthetic MacBook');
  await page.getByLabel('OS version',{exact:true}).fill('15.10');
- await page.getByLabel('Synthetic serial',{exact:true}).fill('E2E-'+unique);
+ await page.getByLabel('Serial number',{exact:true}).fill('E2E-'+unique);
  await page.getByRole('button',{name:'Register device',exact:true}).click();
- await expect(page.getByRole('status')).toContainText('Device registered');
+ await expect(page.getByText('Device registered. Compliance is unknown until evaluated.', {exact:true})).toBeVisible();
  // Read the API using the actual browser access token; no authentication mocks.
  const token=await page.evaluate(()=>sessionStorage.getItem('access_token'));
  const headers={Authorization:'Bearer '+token};
@@ -31,7 +31,7 @@ test('administrator registers, evaluates, ingests and inspects real compliance e
  await expect(page.getByRole('heading',{name:'Browser encryption '+unique})).toBeVisible();
  await page.goto('/devices/'+device.id);
  await page.getByRole('button',{name:'Evaluate policies'}).click();
- await expect(page.getByRole('status')).toContainText('Change saved');
+ await expect(page.getByText('Change saved.', {exact:true})).toBeVisible();
  const credentials=await request.post('http://localhost:8180/realms/fleetops/protocol/openid-connect/token',{form:{grant_type:'client_credentials',client_id:'fleetops-simulator',client_secret:'local-simulator-secret-not-for-production'}});
  expect(credentials.ok()).toBeTruthy();
  const serviceToken=(await credentials.json()).access_token;
@@ -42,6 +42,7 @@ test('administrator registers, evaluates, ingests and inspects real compliance e
  await expect(page.locator('.page-heading .badge')).toHaveText('NONCOMPLIANT');
  await expect(page.getByText('Compliance evidence',{exact:true})).toBeVisible();
  await page.getByRole('link',{name:'Device inventory',exact:true}).click();
+ await expect(page.getByRole('link',{name:'Browser Test '+unique,exact:true})).toBeVisible();
  await page.screenshot({path:'../docs/screenshots/inventory.png',fullPage:true});
 });
 test('viewer has read-only UI and cannot cross tenant boundary',async({page,request})=>{

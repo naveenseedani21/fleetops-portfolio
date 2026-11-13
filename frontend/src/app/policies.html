@@ -14,10 +14,6 @@
 @if (open()) {
   <section class="panel">
     <h2>{{ editing() ? 'Edit policy' : 'Create policy' }}</h2>
-    <p class="muted">
-      This editor supports one rule and one target type per policy. The API supports compound
-      policies.
-    </p>
     <form [formGroup]="form" (ngSubmit)="save()">
       <div class="form-grid">
         <label>Policy name<input formControlName="name" maxlength="100" /></label
@@ -61,7 +57,7 @@
 <section class="panel">
   <div class="section-heading">
     <h2>Policy library</h2>
-    <button mat-button (click)="load()" [disabled]="busy()">Refresh / first page</button>
+    <button mat-button (click)="load()" [disabled]="busy()">Refresh</button>
   </div>
   @if (busy()) {
     <p role="status">Loading…</p>
@@ -94,7 +90,7 @@
     </div>
   }
   <div class="pagination">
-    <span>Up to 25 policies per page</span
+    <span>{{ policies().length }} policies on this page</span
     ><button mat-stroked-button [disabled]="!next() || busy()" (click)="load(next()!)">
       Next page →
     </button>

@@ -18,7 +18,7 @@
 }
 @if (formOpen()) {
   <section class="panel">
-    <h2>Register a synthetic device</h2>
+    <h2>Register device</h2>
     <form [formGroup]="form" (ngSubmit)="register()">
       <div class="form-grid">
         <label>Device name<input formControlName="name" required maxlength="100" /></label
@@ -31,10 +31,7 @@
         ><label>Model<input formControlName="model" required maxlength="100" /></label
         ><label>OS version<input formControlName="osVersion" placeholder="15.10.1" /></label
         ><label
-          >Synthetic serial<input
-            formControlName="serial"
-            required
-            placeholder="SYN-MAC-001" /></label
+          >Serial number<input formControlName="serial" required placeholder="MAC-001" /></label
         ><label>Assigned employee<input formControlName="employee" maxlength="100" /></label>
       </div>
       @if (form.touched && form.invalid) {
@@ -61,14 +58,14 @@
     <h2>
       Registered devices <span class="count">{{ devices().length }} on this page</span>
     </h2>
-    <button mat-button (click)="load()" [disabled]="loading()">Refresh / first page</button>
+    <button mat-button (click)="load()" [disabled]="loading()">Refresh</button>
   </div>
   @if (loading()) {
     <p role="status">Loading inventory…</p>
   } @else if (devices().length === 0) {
     <div class="empty">
       <h3>Your inventory starts here</h3>
-      <p>Register a device or use the simulator to add a synthetic fleet.</p>
+      <p>Register your first device to start tracking inventory and compliance.</p>
     </div>
   } @else {
     <div class="table-scroll">
@@ -110,7 +107,7 @@
     </div>
   }
   <div class="pagination">
-    <span class="muted">Server-side pagination · up to 25 devices</span
+    <span class="muted">{{ devices().length }} devices on this page</span
     ><button mat-stroked-button [disabled]="!next() || loading()" (click)="load(next()!)">
       Next page →
     </button>

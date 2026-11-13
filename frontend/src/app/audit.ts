@@ -7,16 +7,14 @@ import { Api, Audit, Page, errorMessage } from './api';
   imports: [DatePipe, MatButtonModule],
   template: `<p class="eyebrow">WORKSPACE / ACTIVITY</p>
     <h1>Audit activity</h1>
-    <p class="muted">
-      Persisted operations, newest first. Audit events cannot be edited through the application.
-    </p>
+    <p class="muted">A chronological record of device and policy changes.</p>
     @if (error()) {
       <p class="error" role="alert">{{ error() }}</p>
     }
     <section class="panel">
       <div class="section-heading">
         <h2>Operation history</h2>
-        <button mat-button (click)="load()" [disabled]="busy()">Refresh / first page</button>
+        <button mat-button (click)="load()" [disabled]="busy()">Refresh</button>
       </div>
       @if (busy()) {
         <p role="status">Loading…</p>
@@ -50,7 +48,7 @@ import { Api, Audit, Page, errorMessage } from './api';
         </table>
       </div>
       <div class="pagination">
-        <span>Up to 25 events per page</span
+        <span>{{ events().length }} events on this page</span
         ><button mat-stroked-button [disabled]="!next() || busy()" (click)="load(next()!)">
           Next page →
         </button>

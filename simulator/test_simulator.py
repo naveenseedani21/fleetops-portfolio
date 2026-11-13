@@ -12,7 +12,8 @@ class SimulatorTests(unittest.TestCase):
         device = next(fleet(1, 42))
         self.assertFalse(telemetry(device, 1, 'noncompliant')['encryption'])
         self.assertEqual('12.0', telemetry(device, 2, 'outdated')['osVersion'])
-        age = datetime.now(timezone.utc) - datetime.fromisoformat(telemetry(device, 3, 'inactive')['reportedAt'])
+        reported_at = datetime.fromisoformat(telemetry(device, 3, 'inactive')['reportedAt'])
+        age = datetime.now(timezone.utc) - reported_at
         self.assertGreaterEqual(age.days, 7)
     def test_sequence(self):
         self.assertEqual(42, telemetry(next(fleet(1, 1)), 42, 'healthy')['sequence'])
