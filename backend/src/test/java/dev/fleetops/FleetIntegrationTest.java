@@ -255,6 +255,20 @@ class FleetIntegrationTest {
   }
 
   @Test
+  void dashboardCountsPersistedTenantDevices() throws Exception {
+    String org = UUID.randomUUID().toString();
+    register(org, "SUMMARY-001");
+    mvc.perform(get(base(org) + "/dashboard/summary").with(role(org, "VIEWER")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.total").value(1))
+        .andExpect(jsonPath("$.unknown").value(1))
+        .andExpect(jsonPath("$.stale").value(1))
+        .andExpect(jsonPath("$.compliancePercent").isEmpty());
+    mvc.perform(get(base(org) + "/dashboard/summary").with(role("other", "ADMIN")))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
   void invalidPayloadAndCursor() throws Exception {
     String org = UUID.randomUUID().toString();
     mvc.perform(

@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 export const routes: Routes = [
+  { path: 'overview', loadComponent: () => import('./overview').then((m) => m.Overview) },
   { path: '', redirectTo: 'devices', pathMatch: 'full' },
   { path: 'devices', loadComponent: () => import('./inventory').then((m) => m.Inventory) },
   { path: 'devices/:id', loadComponent: () => import('./detail').then((m) => m.Detail) },
