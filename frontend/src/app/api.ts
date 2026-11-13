@@ -74,7 +74,11 @@ export class Api {
       this.http.get<Record<string, string>>('/api/v1/organizations'),
     );
     this.memberships.set(roles);
-    this.organization.set(Object.keys(roles).find((k) => roles[k] !== 'INGESTOR') ?? '');
+    this.organization.set(
+      Object.keys(roles)
+        .sort()
+        .find((k) => roles[k] !== 'INGESTOR') ?? '',
+    );
   }
   url(path: string): string {
     return `/api/v1/organizations/${encodeURIComponent(this.organization())}/${path}`;

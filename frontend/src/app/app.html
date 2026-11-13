@@ -35,7 +35,11 @@
       <header>
         <label
           >Organization
-          <select aria-label="Organization" [value]="api.organization()" (change)="select($event)">
+          <select
+            aria-label="Organization"
+            [ngModel]="api.organization()"
+            (ngModelChange)="select($event)"
+          >
             @for (org of api.memberships() | keyvalue; track org.key) {
               @if (org.value !== 'INGESTOR') {
                 <option [value]="org.key">{{ org.key }}</option>
@@ -44,8 +48,13 @@
           </select></label
         >
         <div class="profile">
-          <span>{{ api.memberships()[api.organization()] }}</span
-          ><button mat-button (click)="auth.logout()">Sign out</button>
+          <span>{{ api.memberships()[api.organization()] }}</span><button
+            mat-button
+            aria-label="Sign out"
+            (click)="auth.logout()"
+          >
+            Sign out
+          </button>
         </div>
       </header>
       <main id="main">

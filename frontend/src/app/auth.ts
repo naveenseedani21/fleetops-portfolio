@@ -32,6 +32,10 @@ export class Auth {
       });
       this.oauth.setStorage(sessionStorage);
       await this.oauth.loadDiscoveryDocumentAndTryLogin();
+      if (!this.oauth.hasValidAccessToken() && this.oauth.getRefreshToken()) {
+        await this.oauth.refreshToken();
+      }
+      this.oauth.setupAutomaticSilentRefresh();
     } catch {
       this.error.set('Identity service unavailable. Check the local Keycloak service and reload.');
     } finally {

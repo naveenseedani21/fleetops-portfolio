@@ -45,8 +45,13 @@
       }
       <div class="actions">
         <button mat-flat-button type="submit" [disabled]="form.invalid || saving()">
-          {{ saving() ? 'Registering…' : 'Register device' }}</button
-        ><button mat-button type="button" (click)="formOpen.set(false)">Cancel</button>
+          {{ saving() ? 'Registering…' : 'Register device' }}</button><button
+          mat-button
+          type="button"
+          (click)="formOpen.set(false)"
+        >
+          Cancel
+        </button>
       </div>
     </form>
   </section>
@@ -82,8 +87,9 @@
           @for (device of devices(); track device.id) {
             <tr>
               <td>
-                <a [routerLink]="['/devices', device.id]" class="device-name">{{ device.name }}</a
-                ><small>{{ device.model }} · {{ device.serial }}</small>
+                <a [routerLink]="['/devices', device.id]" class="device-name">{{
+                  device.name
+                }}</a><small>{{ device.model }} · {{ device.serial }}</small>
               </td>
               <td>{{ device.os }} {{ device.osVersion || 'Unknown' }}</td>
               <td>{{ device.employee || 'Unassigned' }}</td>

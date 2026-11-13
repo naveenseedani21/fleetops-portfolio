@@ -1,12 +1,13 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
 import { KeyValuePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { Auth } from './auth';
 import { Api, errorMessage } from './api';
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, KeyValuePipe, MatButtonModule],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, KeyValuePipe, FormsModule, MatButtonModule],
   templateUrl: './app.html',
 })
 export class App implements OnInit {
@@ -26,8 +27,8 @@ export class App implements OnInit {
     }
     this.loading.set(false);
   }
-  async select(event: Event): Promise<void> {
-    this.api.organization.set((event.target as HTMLSelectElement).value);
+  async select(organization: string): Promise<void> {
+    this.api.organization.set(organization);
     await this.router.navigateByUrl('/devices');
   }
 }
