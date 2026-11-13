@@ -1,0 +1,112 @@
+<p class="eyebrow">WORKSPACE / INVENTORY</p>
+<div class="page-heading">
+  <div>
+    <h1>Device inventory</h1>
+    <p class="muted">
+      A live view of registered devices and their last evaluated security posture.
+    </p>
+  </div>
+  @if (api.admin) {
+    <button mat-flat-button (click)="formOpen.set(!formOpen())">+ Register device</button>
+  }
+</div>
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+@if (notice()) {
+  <p class="notice" role="status">{{ notice() }}</p>
+}
+@if (formOpen()) {
+  <section class="panel">
+    <h2>Register a synthetic device</h2>
+    <form [formGroup]="form" (ngSubmit)="register()">
+      <div class="form-grid">
+        <label>Device name<input formControlName="name" required maxlength="100" /></label
+        ><label
+          >Device type<select formControlName="type">
+            <option value="MAC">Mac</option>
+            <option value="IPHONE">iPhone</option>
+            <option value="IPAD">iPad</option>
+          </select></label
+        ><label>Model<input formControlName="model" required maxlength="100" /></label
+        ><label>OS version<input formControlName="osVersion" placeholder="15.10.1" /></label
+        ><label
+          >Synthetic serial<input
+            formControlName="serial"
+            required
+            placeholder="SYN-MAC-001" /></label
+        ><label>Assigned employee<input formControlName="employee" maxlength="100" /></label>
+      </div>
+      @if (form.touched && form.invalid) {
+        <p class="error">
+          Enter a name, model and serial (3–64 letters, numbers or hyphens). OS version must be
+          numeric.
+        </p>
+      }
+      <div class="actions">
+        <button mat-flat-button type="submit" [disabled]="form.invalid || saving()">
+          {{ saving() ? 'Registering…' : 'Register device' }}</button
+        ><button mat-button type="button" (click)="formOpen.set(false)">Cancel</button>
+      </div>
+    </form>
+  </section>
+}
+<section class="panel">
+  <div class="section-heading">
+    <h2>
+      Registered devices <span class="count">{{ devices().length }} on this page</span>
+    </h2>
+    <button mat-button (click)="load()" [disabled]="loading()">Refresh / first page</button>
+  </div>
+  @if (loading()) {
+    <p role="status">Loading inventory…</p>
+  } @else if (devices().length === 0) {
+    <div class="empty">
+      <h3>Your inventory starts here</h3>
+      <p>Register a device or use the simulator to add a synthetic fleet.</p>
+    </div>
+  } @else {
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Device</th>
+            <th>Operating system</th>
+            <th>Assigned to</th>
+            <th>Lifecycle</th>
+            <th>Compliance</th>
+            <th>Last check-in</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (device of devices(); track device.id) {
+            <tr>
+              <td>
+                <a [routerLink]="['/devices', device.id]" class="device-name">{{ device.name }}</a
+                ><small>{{ device.model }} · {{ device.serial }}</small>
+              </td>
+              <td>{{ device.os }} {{ device.osVersion || 'Unknown' }}</td>
+              <td>{{ device.employee || 'Unassigned' }}</td>
+              <td>{{ device.status }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [class.bad]="device.compliance === 'NONCOMPLIANT'"
+                  [class.good]="device.compliance === 'COMPLIANT'"
+                  >{{ device.compliance.replace('_', ' ') }}</span
+                >
+              </td>
+              <td>{{ device.lastCheckIn ? (device.lastCheckIn | date: 'medium') : 'Never' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  <div class="pagination">
+    <span class="muted">Server-side pagination · up to 25 devices</span
+    ><button mat-stroked-button [disabled]="!next() || loading()" (click)="load(next()!)">
+      Next page →
+    </button>
+  </div>
+</section>

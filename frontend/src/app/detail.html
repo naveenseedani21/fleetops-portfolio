@@ -1,0 +1,104 @@
+<p class="eyebrow"><a routerLink="/devices">INVENTORY</a> / DEVICE DETAILS</p>
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+@if (notice()) {
+  <p class="notice" role="status">{{ notice() }}</p>
+}
+@if (busy()) {
+  <p role="status">Loading…</p>
+}
+@if (device(); as d) {
+  <div class="page-heading">
+    <div>
+      <h1>{{ d.name }}</h1>
+      <p class="muted">{{ d.model }} · {{ d.serial }}</p>
+    </div>
+    <span
+      class="badge"
+      [class.bad]="d.compliance === 'NONCOMPLIANT'"
+      [class.good]="d.compliance === 'COMPLIANT'"
+      >{{ d.compliance }}</span
+    >
+  </div>
+  <div class="detail-grid">
+    <section class="panel">
+      <h2>Device information</h2>
+      <dl>
+        <dt>Operating system</dt>
+        <dd>{{ d.os }} {{ d.osVersion || 'Unknown' }}</dd>
+        <dt>Lifecycle</dt>
+        <dd>{{ d.status }}</dd>
+        <dt>Last check-in</dt>
+        <dd>{{ d.lastCheckIn ? (d.lastCheckIn | date: 'medium') : 'Never' }}</dd>
+        <dt>Disk encryption</dt>
+        <dd>{{ d.encryption === null ? 'Unknown' : d.encryption ? 'Enabled' : 'Disabled' }}</dd>
+        <dt>Screen lock</dt>
+        <dd>{{ d.screenLock === null ? 'Unknown' : d.screenLock ? 'Enabled' : 'Disabled' }}</dd>
+        <dt>Firewall</dt>
+        <dd>
+          {{
+            d.type !== 'MAC'
+              ? 'Not applicable'
+              : d.firewall === null
+                ? 'Unknown'
+                : d.firewall
+                  ? 'Enabled'
+                  : 'Disabled'
+          }}
+        </dd>
+      </dl>
+    </section>
+    <section class="panel">
+      <h2>Assignment & metadata</h2>
+      @if (api.admin && d.status !== 'RETIRED') {
+        <form [formGroup]="form" (ngSubmit)="act('save')">
+          <label>Name<input formControlName="name" maxlength="100" /></label
+          ><label>Assigned employee<input formControlName="employee" maxlength="100" /></label
+          ><button mat-flat-button [disabled]="busy() || form.invalid">Save changes</button>
+        </form>
+        <div class="actions">
+          <button mat-stroked-button [disabled]="busy()" (click)="act('evaluate')">
+            Evaluate policies</button
+          ><button mat-button [disabled]="busy()" (click)="confirming.set(true)">
+            Retire device
+          </button>
+        </div>
+        @if (confirming()) {
+          <div class="confirmation" role="alert">
+            <p>Retire this device? Future reports and edits will be rejected.</p>
+            <button mat-flat-button (click)="act('retire')" [disabled]="busy()">
+              Confirm retirement</button
+            ><button mat-button (click)="confirming.set(false)">Cancel</button>
+          </div>
+        }
+      } @else {
+        <p>{{ d.employee || 'Unassigned' }}</p>
+        <p class="muted">This record is read-only.</p>
+      }
+    </section>
+  </div>
+  <section class="panel">
+    <h2>Compliance evidence</h2>
+    <p class="muted">
+      Latest 25 evaluations. Results preserve the policy version used at evaluation time.
+    </p>
+    @for (e of history(); track e.id) {
+      <details>
+        <summary>{{ e.status }} · {{ e.evaluatedAt | date: 'medium' }}</summary>
+        @for (p of e.policies; track p.policyId) {
+          <h3>{{ p.severity }} · Policy {{ p.policyId }} / v{{ p.policyVersion }}</h3>
+          @for (r of p.rules; track r.rule) {
+            <p>
+              {{ r.rule }}: <strong>{{ r.status }}</strong> — {{ r.reason }}
+            </p>
+          }
+        } @empty {
+          <p>No policies applied.</p>
+        }
+      </details>
+    } @empty {
+      <p>No evaluation evidence yet.</p>
+    }
+  </section>
+}

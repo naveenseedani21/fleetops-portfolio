@@ -1,0 +1,102 @@
+<p class="eyebrow">WORKSPACE / SECURITY</p>
+<div class="page-heading">
+  <div>
+    <h1>Security policies</h1>
+    <p class="muted">Versioned requirements. Evaluate a device after changing a policy.</p>
+  </div>
+  @if (api.admin) {
+    <button mat-flat-button (click)="edit(null)">+ Create policy</button>
+  }
+</div>
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+@if (open()) {
+  <section class="panel">
+    <h2>{{ editing() ? 'Edit policy' : 'Create policy' }}</h2>
+    <p class="muted">
+      This editor supports one rule and one target type per policy. The API supports compound
+      policies.
+    </p>
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="form-grid">
+        <label>Policy name<input formControlName="name" maxlength="100" /></label
+        ><label>Description<input formControlName="description" maxlength="500" /></label
+        ><label
+          >Target type<select formControlName="type">
+            <option>MAC</option>
+            <option>IPHONE</option>
+            <option>IPAD</option>
+          </select></label
+        ><label
+          >Severity<select formControlName="severity">
+            <option>LOW</option>
+            <option>MEDIUM</option>
+            <option>HIGH</option>
+            <option>CRITICAL</option>
+          </select></label
+        ><label
+          >Rule<select formControlName="rule">
+            <option>ENCRYPTION</option>
+            <option>SCREEN_LOCK</option>
+            <option>FIREWALL</option>
+            <option>MIN_OS</option>
+            <option>MAX_AGE_HOURS</option>
+            <option>ALLOWED_TYPE</option>
+          </select></label
+        ><label>Required value<input formControlName="value" aria-describedby="rule-help" /></label>
+      </div>
+      <p id="rule-help" class="muted">
+        Boolean rules: true or false. OS: numeric version. Age: positive hours. Types:
+        MAC,IPHONE,IPAD.
+      </p>
+      <label class="checkbox"><input type="checkbox" formControlName="enabled" />Enabled</label>
+      <div class="actions">
+        <button mat-flat-button [disabled]="busy() || form.invalid">Save policy version</button
+        ><button mat-button type="button" (click)="open.set(false)">Cancel</button>
+      </div>
+    </form>
+  </section>
+}
+<section class="panel">
+  <div class="section-heading">
+    <h2>Policy library</h2>
+    <button mat-button (click)="load()" [disabled]="busy()">Refresh / first page</button>
+  </div>
+  @if (busy()) {
+    <p role="status">Loading…</p>
+  }
+  @for (p of policies(); track p.id) {
+    <article class="policy">
+      <div>
+        <h3>
+          {{ p.name }} <span class="badge">v{{ p.version }}</span>
+        </h3>
+        <p>{{ p.description }}</p>
+        <p class="muted">
+          {{ p.targetTypes.join(', ') }} · {{ p.severity }} ·
+          {{ p.enabled ? 'Enabled' : 'Disabled' }}
+        </p>
+        @for (r of p.rules; track r.type) {
+          <p>
+            {{ r.type }} <strong>{{ r.value }}</strong>
+          </p>
+        }
+      </div>
+      @if (api.admin && p.rules.length === 1 && p.targetTypes.length === 1) {
+        <button mat-stroked-button (click)="edit(p)">Edit</button>
+      }
+    </article>
+  } @empty {
+    <div class="empty">
+      <h3>No policies yet</h3>
+      <p>Create a baseline to begin evaluating device posture.</p>
+    </div>
+  }
+  <div class="pagination">
+    <span>Up to 25 policies per page</span
+    ><button mat-stroked-button [disabled]="!next() || busy()" (click)="load(next()!)">
+      Next page →
+    </button>
+  </div>
+</section>

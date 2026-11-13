@@ -1,0 +1,46 @@
+{
+  "name": "fleetops-web",
+  "version": "0.1.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve --host 127.0.0.1 --proxy-config proxy.conf.json",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test --watch=false",
+    "lint": "eslint src",
+    "format:check": "prettier --check src",
+    "format": "prettier --write src",
+    "e2e": "playwright test"
+  },
+  "private": true,
+  "packageManager": "npm@10.9.9",
+  "dependencies": {
+    "@angular/common": "^21.2.0",
+    "@angular/compiler": "^21.2.0",
+    "@angular/core": "^21.2.0",
+    "@angular/forms": "^21.2.0",
+    "@angular/platform-browser": "^21.2.0",
+    "@angular/router": "^21.2.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "@angular/material": "21.2.14",
+    "@angular/cdk": "21.2.14",
+    "angular-oauth2-oidc": "^21.0.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^21.2.30",
+    "@angular/cli": "^21.2.30",
+    "@angular/compiler-cli": "^21.2.0",
+    "jsdom": "^28.0.0",
+    "prettier": "^3.8.1",
+    "typescript": "~5.9.2",
+    "vitest": "^4.0.8",
+    "@playwright/test": "^1.56.1",
+    "eslint": "^9.39.0",
+    "angular-eslint": "^21.0.0",
+    "typescript-eslint": "^8.46.0"
+  },
+  "engines": {
+    "node": ">=22.12 <23"
+  }
+}
