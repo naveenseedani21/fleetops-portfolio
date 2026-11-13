@@ -280,4 +280,170 @@ class FleetIntegrationTest {
     mvc.perform(get(base(org) + "/devices?cursor=not-base64!").with(role(org, "ADMIN")))
         .andExpect(status().isBadRequest());
   }
+
+  @Test
+  void policyAndAuditTenantBoundariesAndMachinePermissions() throws Exception {
+    String org = UUID.randomUUID().toString();
+    String path = base(org);
+    String policy =
+        "{\"version\":0,\"name\":\"Baseline\",\"targetTypes\":[\"MAC\"],\"rules\":[{\"type\":\"MIN_OS\",\"value\":\"15.2\"}],\"severity\":\"HIGH\",\"enabled\":true}";
+    for (var principal :
+        List.of(role("other", "ADMIN"), role(org, "VIEWER"), role(org, "INGESTOR"))) {
+      mvc.perform(
+              post(path + "/policies")
+                  .with(principal)
+                  .contentType("application/json")
+                  .content(policy))
+          .andExpect(status().isForbidden());
+      mvc.perform(
+              put(path + "/policies/nonexistent")
+                  .with(principal)
+                  .contentType("application/json")
+                  .content(policy))
+          .andExpect(status().isForbidden());
+    }
+    for (var principal : List.of(role("other", "ADMIN"), role(org, "INGESTOR"))) {
+      mvc.perform(get(path + "/audit-events").with(principal)).andExpect(status().isForbidden());
+      mvc.perform(get(path + "/policies").with(principal)).andExpect(status().isForbidden());
+    }
+    JsonNode device = json.readTree(register(org, "BOUNDARY-001"));
+    String devicePath = path + "/devices/" + device.get("id").asText();
+    mvc.perform(post(devicePath + "/evaluations").with(role(org, "INGESTOR")))
+        .andExpect(status().isForbidden());
+    mvc.perform(
+            patch(devicePath)
+                .with(role(org, "INGESTOR"))
+                .contentType("application/json")
+                .content("{\"revision\":1,\"name\":\"Unauthorized\"}"))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void minimumOsRecoveryRejectsStaleReportsWithoutDuplicateEvidence() throws Exception {
+    String org = UUID.randomUUID().toString();
+    JsonNode device = json.readTree(register(org, "RECOVERY-001"));
+    String path = base(org) + "/devices/" + device.get("id").asText();
+    String policy =
+        "{\"version\":0,\"name\":\"OS baseline\",\"targetTypes\":[\"MAC\"],\"rules\":[{\"type\":\"MIN_OS\",\"value\":\"15.2\"}],\"severity\":\"HIGH\",\"enabled\":true}";
+    mvc.perform(
+            post(base(org) + "/policies")
+                .with(role(org, "ADMIN"))
+                .contentType("application/json")
+                .content(policy))
+        .andExpect(status().isCreated());
+    String oldReport =
+        "{\"reportId\":\"old\",\"sequence\":1,\"reportedAt\":\"2026-01-01T00:00:00Z\",\"osVersion\":\"14.10\"}";
+    String newReport =
+        "{\"reportId\":\"new\",\"sequence\":2,\"reportedAt\":\"2026-01-02T00:00:00Z\",\"osVersion\":\"15.2\"}";
+    mvc.perform(
+            post(path + "/reports")
+                .with(role(org, "INGESTOR"))
+                .contentType("application/json")
+                .content(oldReport))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.compliance").value("NONCOMPLIANT"));
+    mvc.perform(get(path + "/evaluations").with(role(org, "VIEWER")))
+        .andExpect(jsonPath("$.items[0].policies[0].rules[0].rule").value("MIN_OS"))
+        .andExpect(jsonPath("$.items[0].policies[0].rules[0].reason").value("Requirement not met"));
+    mvc.perform(get(base(org) + "/audit-events").with(role(org, "VIEWER")))
+        .andExpect(jsonPath("$.items.length()").value(4));
+    for (int repeat = 0; repeat < 2; repeat++) {
+      mvc.perform(
+              post(path + "/reports")
+                  .with(role(org, "INGESTOR"))
+                  .contentType("application/json")
+                  .content(newReport))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.compliance").value("COMPLIANT"))
+          .andExpect(jsonPath("$.revision").value(3));
+    }
+    mvc.perform(
+            post(path + "/reports")
+                .with(role(org, "INGESTOR"))
+                .contentType("application/json")
+                .content(oldReport))
+        .andExpect(status().isConflict());
+    mvc.perform(get(path).with(role(org, "VIEWER")))
+        .andExpect(jsonPath("$.sequence").value(2))
+        .andExpect(jsonPath("$.compliance").value("COMPLIANT"));
+    mvc.perform(get(path + "/evaluations").with(role(org, "VIEWER")))
+        .andExpect(jsonPath("$.items.length()").value(2))
+        .andExpect(jsonPath("$.items[0].status").value("COMPLIANT"))
+        .andExpect(jsonPath("$.items[1].status").value("NONCOMPLIANT"))
+        .andExpect(jsonPath("$.items[1].policies[0].policyVersion").value(1));
+    mvc.perform(get(base(org) + "/audit-events").with(role(org, "VIEWER")))
+        .andExpect(jsonPath("$.items.length()").value(6));
+  }
+
+  @Test
+  void retirementPreservesComplianceAndRejectsFurtherMutation() throws Exception {
+    String org = UUID.randomUUID().toString();
+    JsonNode device = json.readTree(register(org, "RETIRE-001"));
+    String path = base(org) + "/devices/" + device.get("id").asText();
+    mvc.perform(
+            patch(path)
+                .with(role(org, "ADMIN"))
+                .contentType("application/json")
+                .content("{\"revision\":1,\"name\":\"Assigned\",\"employee\":\"Employee 1\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.employee").value("Employee 1"));
+    mvc.perform(
+            patch(path)
+                .with(role(org, "ADMIN"))
+                .contentType("application/json")
+                .content("{\"revision\":2,\"name\":\"Unassigned\",\"employee\":null}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.employee").isEmpty());
+    mvc.perform(
+            post(path + "/retire")
+                .with(role(org, "ADMIN"))
+                .contentType("application/json")
+                .content("{\"revision\":3}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("RETIRED"))
+        .andExpect(jsonPath("$.compliance").value("UNKNOWN"));
+    mvc.perform(post(path + "/evaluations").with(role(org, "ADMIN")))
+        .andExpect(status().isBadRequest());
+    mvc.perform(
+            patch(path)
+                .with(role(org, "ADMIN"))
+                .contentType("application/json")
+                .content("{\"revision\":4,\"name\":\"Resurrected\"}"))
+        .andExpect(status().isBadRequest());
+    mvc.perform(
+            post(path + "/reports")
+                .with(role(org, "INGESTOR"))
+                .contentType("application/json")
+                .content(
+                    "{\"reportId\":\"after-retire\",\"sequence\":1,\"reportedAt\":\"2026-01-01T00:00:00Z\"}"))
+        .andExpect(status().isBadRequest());
+    mvc.perform(get(base(org) + "/audit-events").with(role(org, "VIEWER")))
+        .andExpect(jsonPath("$.items.length()").value(4));
+  }
+
+  @Test
+  void conflictingTransactionCannotLeavePartialAudit() throws Exception {
+    String org = UUID.randomUUID().toString();
+    JsonNode device = json.readTree(register(org, "ATOMIC-001"));
+    var store = new dev.fleetops.persistence.Store(db, json, TABLE);
+    var before =
+        store.get(org, "DEVICE#" + device.get("id").asText(), dev.fleetops.devices.Device.class);
+    var audit =
+        dev.fleetops.audit.Audit.change(
+            org, "test-user", "MUST_NOT_COMMIT", before.id(), java.time.Instant.now());
+    assertThrows(
+        dev.fleetops.shared.ApiException.class,
+        () ->
+            store.commit(
+                org,
+                List.of(
+                    new dev.fleetops.persistence.Store.Change(
+                        "DEVICE#" + before.id(), before, 2, 999L),
+                    audit)));
+    assertEquals(
+        1, store.get(org, "DEVICE#" + before.id(), dev.fleetops.devices.Device.class).revision());
+    var events = store.list(org, "AUDIT#", 25, null, dev.fleetops.audit.Audit.class, false);
+    assertEquals(1, events.items().size());
+    assertEquals("DEVICE_REGISTERED", events.items().get(0).action());
+  }
 }

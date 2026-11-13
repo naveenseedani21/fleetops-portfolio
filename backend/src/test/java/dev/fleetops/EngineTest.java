@@ -61,6 +61,9 @@ class EngineTest {
 
   @Test
   void numericVersions() {
+    assertTrue(Engine.compare("14.10", "14.9") > 0);
+    assertTrue(Engine.compare("15.0", "14.9") > 0);
+    assertEquals(0, Engine.compare("15.1", "15.1.0"));
     assertTrue(Engine.compare("15.10", "15.9") > 0);
     assertEquals(0, Engine.compare("15.0", "15"));
     assertTrue(Engine.compare("14.9.9", "15") < 0);

@@ -66,12 +66,18 @@ class TokenValidationTest {
   }
 
   String token(String issuer, String audience, Instant expiry, RSAKey key) throws Exception {
+    return token(issuer, audience, expiry, key, Instant.now().minusSeconds(60));
+  }
+
+  String token(String issuer, String audience, Instant expiry, RSAKey key, Instant notBefore)
+      throws Exception {
     var claims =
         new JWTClaimsSet.Builder()
             .subject("test-user")
             .issuer(issuer)
             .audience(audience)
             .issueTime(Date.from(Instant.now().minusSeconds(600)))
+            .notBeforeTime(Date.from(notBefore))
             .expirationTime(Date.from(expiry))
             .claim("organizations", Map.of("demo", "VIEWER"))
             .build();
@@ -120,5 +126,21 @@ class TokenValidationTest {
       mvc.perform(get("/api/v1/organizations").header("Authorization", "Bearer " + value))
           .andExpect(status().isUnauthorized());
     }
+  }
+
+  @Test
+  void rejectsTokenThatIsNotYetValid() throws Exception {
+    mvc.perform(
+            get("/api/v1/organizations")
+                .header(
+                    "Authorization",
+                    "Bearer "
+                        + token(
+                            "https://issuer.example.test",
+                            "fleetops-api",
+                            Instant.now().plusSeconds(1200),
+                            KEY,
+                            Instant.now().plusSeconds(600))))
+        .andExpect(status().isUnauthorized());
   }
 }
