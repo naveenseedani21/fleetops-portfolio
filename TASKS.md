@@ -35,7 +35,8 @@
 - [x] Manual browser sign-in, policy creation, inventory and failed-rule evidence check.
 - [x] Screenshot of actual persisted compliance evidence.
 - [ ] Historical compliance trends and severity alert dashboard.
-- [ ] Device-specific audit filtering and older evidence pagination UI.
+- [x] Older device evidence pagination with retry and stale-response protection.
+- [ ] Device-specific audit filtering.
 - [ ] Persistent authorization-denial audit and alerting.
 - [ ] Comprehensive keyboard/screen-reader/mobile review.
 

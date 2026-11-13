@@ -5,7 +5,7 @@ Validated locally on November 12, 2026. This is an execution record, not a claim
 | Check | Result |
 | --- | --- |
 | Java 21 Maven verify and Spotless | 16 tests passed, including DynamoDB Local integration, signed JWT validation, tenant boundaries, and dashboard aggregation |
-| Angular unit tests | 8 passed across 3 files; compound policy preservation, validation, failed-save recovery, viewer controls and history response ordering |
+| Angular unit tests | 11 passed across 4 files; compound policy preservation, validation, failed-save recovery, viewer controls, history response ordering, and device evidence pagination/retry |
 | Angular ESLint and production build | Passed |
 | Python simulator unit tests | 4 passed |
 | Terraform foundation | fmt, init without backend, and validate passed; no infrastructure applied |

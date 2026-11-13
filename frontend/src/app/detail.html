@@ -79,10 +79,10 @@
     </section>
   </div>
   <section class="panel">
-    <h2>Compliance evidence</h2>
-    <p class="muted">
-      Latest 25 evaluations. Results preserve the policy version used at evaluation time.
-    </p>
+    <h2>
+      Compliance evidence <span class="count">{{ history().length }} loaded</span>
+    </h2>
+    <p class="muted">Results preserve the policy version used at evaluation time.</p>
     @for (e of history(); track e.id) {
       <details>
         <summary>{{ e.status }} · {{ e.evaluatedAt | date: 'medium' }}</summary>
@@ -99,6 +99,16 @@
       </details>
     } @empty {
       <p>No evaluation evidence yet.</p>
+    }
+    @if (historyError()) {
+      <p role="alert" class="error">{{ historyError() }}</p>
+    }
+    @if (historyNext()) {
+      <div class="actions">
+        <button mat-stroked-button [disabled]="historyBusy() || busy()" (click)="loadOlder()">
+          {{ historyBusy() ? 'Loading evidence…' : 'Load older evaluations' }}
+        </button>
+      </div>
     }
   </section>
 }
