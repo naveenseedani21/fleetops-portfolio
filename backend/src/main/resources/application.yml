@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: fleetops
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${OIDC_ISSUER:http://localhost:8180/realms/fleetops}
+          jwk-set-uri: ${OIDC_JWKS:http://localhost:8180/realms/fleetops/protocol/openid-connect/certs}
+          audiences: ${OIDC_AUDIENCE:fleetops-api}
+fleetops:
+  dynamodb:
+    endpoint: ${DYNAMODB_ENDPOINT:}
+    table: ${DYNAMODB_TABLE:fleetops}
+    region: ${AWS_REGION:us-east-1}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+logging:
+  structured:
+    format:
+      console: ecs
+server:
+  error:
+    include-message: never
+  shutdown: graceful
