@@ -66,7 +66,7 @@ test('administrator provisioning, restricted machine reports, visible failure an
   const policyName = 'Reviewer baseline ' + unique;
   await page.getByLabel('Policy name', { exact: true }).fill(policyName);
   await page.getByRole('button', { name: '+ Add requirement', exact: true }).click();
-  await page.getByLabel('Requirement 2', { exact: true }).selectOption('MIN_OS');
+  await page.getByLabel(/^Requirement\s+2\b/).selectOption('MIN_OS');
   await page.getByLabel('Minimum version', { exact: true }).fill('17.0');
   const policySaved = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/organizations/demo/policies'));
   await page.getByRole('button', { name: 'Save policy version' }).click();
